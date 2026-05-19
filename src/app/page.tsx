@@ -60,8 +60,12 @@ export default function Home() {
           <SiteHeader />
           <img
             className={styles.heroImage}
-            src={assetPath("/images/hero-editorial.png")}
+            src={assetPath("/images/hero-editorial.jpg")}
             alt="Model reclining in a burgundy velvet suit against warm walnut panels"
+            width={1500}
+            height={844}
+            decoding="async"
+            fetchPriority="high"
           />
           <div className={styles.heroCopy}>
             <p>Which sets the character the entire collection</p>
@@ -70,13 +74,13 @@ export default function Home() {
 
         <section id="collection" className={styles.editorialGrid} aria-label="Collection stories">
           <EditorialTile
-            image="/images/tile-glove.png"
+            image="/images/tile-glove.jpg"
             alt="Cream leather glove with ivory knit sleeve and dark tailored trousers"
             eyebrow="A silhouette that remembers you"
             priority
           />
           <EditorialTile
-            image="/images/tile-shoes.png"
+            image="/images/tile-shoes.jpg"
             alt="Dark brown leather slingback heel on a quilted chocolate leather bag"
             eyebrow="Nothing loud. Everything intentional"
           />
@@ -85,8 +89,11 @@ export default function Home() {
         <section id="story" className={styles.storyGrid} aria-label="Bold shape story">
           <div className={styles.storyImage}>
             <img
-              src={assetPath("/images/tile-look-wide.png")}
+              src={assetPath("/images/tile-look-wide.jpg")}
               alt="Model in a black leather dress seated against a walnut wall"
+              width={1500}
+              height={750}
+              decoding="async"
               loading="lazy"
             />
           </div>

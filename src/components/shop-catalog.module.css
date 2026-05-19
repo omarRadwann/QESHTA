@@ -36,6 +36,8 @@
   line-height: 1;
   min-height: 28px;
   padding: 0 12px;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease,
+    transform 160ms ease;
 }
 
 .filterToggle {
@@ -73,6 +75,7 @@
   font-size: 0.75rem;
   min-height: 30px;
   padding: 0 9px;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .searchRow input {
@@ -105,6 +108,7 @@
 }
 
 .filtersOpen {
+  animation: filtersIn 180ms ease both;
   display: grid;
 }
 
@@ -202,5 +206,64 @@
   .grid,
   .filters {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (hover: hover) {
+  .categoryBar button:hover,
+  .clearButton:hover,
+  .emptyState button:hover,
+  .loadMore:hover {
+    transform: translateY(-1px);
+  }
+
+  .categoryBar button:not(.activeCategory):hover,
+  .clearButton:hover,
+  .emptyState button:hover,
+  .loadMore:hover {
+    background: #f3f1ed;
+  }
+
+  .filterToggle:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.searchRow input:focus,
+.searchRow select:focus {
+  border-color: #050505;
+  box-shadow: 0 0 0 3px rgb(5 5 5 / 8%);
+  outline: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .categoryBar,
+  .headingRow,
+  .searchRow {
+    animation: controlsReveal 420ms ease both;
+  }
+}
+
+@keyframes controlsReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes filtersIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

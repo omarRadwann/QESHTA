@@ -246,13 +246,19 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
               product={product}
               href={`/shop#${product.id}`}
               priority={index < 4}
+              revealIndex={index}
             />
           ))}
 
           {!hasActiveFilters && filteredProducts.length > 8 ? <ShopEditorialBanner /> : null}
 
-          {visibleProducts.slice(8).map((product) => (
-            <ProductCard key={product.id} product={product} href={`/shop#${product.id}`} />
+          {visibleProducts.slice(8).map((product, index) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              href={`/shop#${product.id}`}
+              revealIndex={index + 8}
+            />
           ))}
         </div>
       ) : (

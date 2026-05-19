@@ -22,9 +22,9 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: "/images/shop-editorial-banner.png",
-        width: 1983,
-        height: 793,
+        url: "/images/shop-editorial-banner.jpg",
+        width: 1600,
+        height: 640,
         alt: "QESHTA leather styling campaign",
       },
     ],
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     title: "Shop Spring 26 Clothing, Shoes and Accessories | QESHTA",
     description:
       "Shop the QESHTA Spring 26 edit of sculpted jackets, dresses, shoes, bags, and jewelry.",
-    images: ["/images/shop-editorial-banner.png"],
+    images: ["/images/shop-editorial-banner.jpg"],
   },
 };
 

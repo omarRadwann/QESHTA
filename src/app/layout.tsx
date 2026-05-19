@@ -26,9 +26,9 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     images: [
       {
-        url: "/images/hero-editorial.png",
-        width: 1792,
-        height: 1024,
+        url: "/images/hero-editorial.jpg",
+        width: 1500,
+        height: 844,
         alt: "QESHTA burgundy velvet tailoring campaign",
       },
     ],
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "QESHTA | Sculpted Clothing and Quiet Luxury Essentials",
     description: siteConfig.description,
-    images: ["/images/hero-editorial.png"],
+    images: ["/images/hero-editorial.jpg"],
   },
   robots: {
     index: true,
