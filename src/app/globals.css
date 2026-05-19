@@ -7,20 +7,24 @@
     sans-serif;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html {
   background: var(--background);
+  font-family: var(--font-qeshta);
+  font-stretch: condensed;
   scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-qeshta);
-  font-stretch: condensed;
+  font-family: inherit;
+  font-stretch: inherit;
   margin: 0;
   min-height: 100vh;
   text-rendering: geometricprecision;
@@ -37,6 +41,11 @@ a {
 button,
 input,
 textarea,
-select {
+select,
+option {
   font: inherit;
+}
+
+::placeholder {
+  font-family: inherit;
 }
