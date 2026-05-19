@@ -1,6 +1,7 @@
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { formatPrice, type Product } from "@/data/products";
+import { assetPath } from "@/lib/assets";
 import styles from "./product-card.module.css";
 
 type ProductCardProps = {
@@ -17,12 +18,10 @@ export function ProductCard({
   return (
     <article className={compact ? styles.compactCard : styles.card}>
       <Link className={styles.imageFrame} href="#selected-products" aria-label={`View ${product.name}`}>
-        <Image
-          src={product.image}
+        <img
+          src={assetPath(product.image)}
           alt={product.alt}
-          fill
-          sizes={compact ? "(max-width: 760px) 50vw, 248px" : "(max-width: 760px) 50vw, 258px"}
-          priority={priority}
+          loading={priority ? "eager" : "lazy"}
         />
       </Link>
       <h3>{product.name}</h3>

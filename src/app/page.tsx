@@ -1,4 +1,4 @@
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { EditorialTile } from "@/components/editorial-tile";
 import { JsonLd } from "@/components/json-ld";
@@ -10,6 +10,7 @@ import {
   productSchema,
   selectedProducts,
 } from "@/data/products";
+import { assetPath } from "@/lib/assets";
 import { siteConfig } from "@/lib/site";
 import styles from "./page.module.css";
 
@@ -57,13 +58,10 @@ export default function Home() {
       <div className={styles.canvas}>
         <section className={styles.hero} aria-label="QESHTA new collection">
           <SiteHeader />
-          <Image
+          <img
             className={styles.heroImage}
-            src="/images/hero-editorial.png"
+            src={assetPath("/images/hero-editorial.png")}
             alt="Model reclining in a burgundy velvet suit against warm walnut panels"
-            fill
-            priority
-            sizes="(max-width: 1120px) 100vw, 1120px"
           />
           <div className={styles.heroCopy}>
             <p>Which sets the character the entire collection</p>
@@ -86,11 +84,10 @@ export default function Home() {
 
         <section id="story" className={styles.storyGrid} aria-label="Bold shape story">
           <div className={styles.storyImage}>
-            <Image
-              src="/images/tile-look.png"
+            <img
+              src={assetPath("/images/tile-look.png")}
               alt="Model in a black leather dress seated against a walnut wall"
-              fill
-              sizes="(max-width: 760px) 100vw, 560px"
+              loading="lazy"
             />
           </div>
 

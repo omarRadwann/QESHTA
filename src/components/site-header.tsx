@@ -1,5 +1,6 @@
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { assetPath } from "@/lib/assets";
 import styles from "./site-header.module.css";
 
 const primaryNav = [
@@ -28,12 +29,11 @@ export function SiteHeader() {
       </nav>
 
       <Link className={styles.logo} href="/" aria-label="QESHTA home">
-        <Image
-          src="/images/qeshta-logo.png"
+        <img
+          src={assetPath("/images/qeshta-logo.png")}
           alt="QESHTA"
           width={563}
           height={169}
-          priority
         />
       </Link>
 

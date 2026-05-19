@@ -7,9 +7,9 @@
 
 .canvas {
   background: #ffffff;
-  margin: 0 auto;
+  margin: 0;
   overflow: hidden;
-  width: min(1120px, 100vw);
+  width: 100%;
 }
 
 .srOnly {
@@ -30,11 +30,16 @@
   min-height: 560px;
   overflow: hidden;
   position: relative;
+  width: 100%;
 }
 
 .heroImage {
+  inset: 0;
+  height: 100%;
   object-fit: cover;
   object-position: center;
+  position: absolute;
+  width: 100%;
 }
 
 .heroCopy {
@@ -70,7 +75,11 @@
 }
 
 .storyImage img {
+  height: 100%;
+  inset: 0;
   object-fit: cover;
+  position: absolute;
+  width: 100%;
 }
 
 .storyPanel {
@@ -151,7 +160,7 @@
 
 @media (max-width: 900px) {
   .canvas {
-    width: min(100vw, 760px);
+    width: 100%;
   }
 
   .hero {

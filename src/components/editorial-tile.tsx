@@ -1,5 +1,6 @@
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { assetPath } from "@/lib/assets";
 import styles from "./editorial-tile.module.css";
 
 type EditorialTileProps = {
@@ -19,7 +20,7 @@ export function EditorialTile({
 }: EditorialTileProps) {
   return (
     <article className={styles.tile}>
-      <Image src={image} alt={alt} fill sizes="(max-width: 760px) 100vw, 560px" priority={priority} />
+      <img src={assetPath(image)} alt={alt} loading={priority ? "eager" : "lazy"} />
       <div className={styles.copy}>
         <p>{eyebrow}</p>
         <Link href={href}>Shop Now</Link>
