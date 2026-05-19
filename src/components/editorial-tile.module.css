@@ -1,0 +1,48 @@
+.tile {
+  background: #171717;
+  min-height: 650px;
+  overflow: hidden;
+  position: relative;
+}
+
+.tile img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.copy {
+  bottom: 205px;
+  color: #ffffff;
+  left: 50%;
+  line-height: 1.08;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  width: min(220px, 72%);
+}
+
+.copy p {
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin: 0 0 16px;
+  text-transform: uppercase;
+}
+
+.copy a {
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .tile {
+    min-height: 530px;
+  }
+
+  .copy {
+    bottom: 110px;
+  }
+}

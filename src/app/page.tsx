@@ -1,65 +1,143 @@
 import Image from "next/image";
+import Link from "next/link";
+import { EditorialTile } from "@/components/editorial-tile";
+import { JsonLd } from "@/components/json-ld";
+import { ProductCard } from "@/components/product-card";
+import { SiteHeader } from "@/components/site-header";
+import {
+  allProducts,
+  featuredProducts,
+  productSchema,
+  selectedProducts,
+} from "@/data/products";
+import { siteConfig } from "@/lib/site";
+import styles from "./page.module.css";
 
 export default function Home() {
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: siteConfig.name,
+      legalName: siteConfig.legalName,
+      url: siteConfig.siteUrl,
+      logo: `${siteConfig.siteUrl}/images/qeshta-logo.png`,
+      description: siteConfig.description,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: siteConfig.name,
+      url: siteConfig.siteUrl,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${siteConfig.siteUrl}/search?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Selected QESHTA products",
+      itemListElement: allProducts.map((product, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        item: productSchema(product),
+      })),
+    },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+    <main className={styles.shell}>
+      <JsonLd data={structuredData} />
+      <h1 className={styles.srOnly}>
+        QESHTA clothing, leather tailoring, and sculpted womenswear
+      </h1>
+
+      <div className={styles.canvas}>
+        <section className={styles.hero} aria-label="QESHTA new collection">
+          <SiteHeader />
+          <Image
+            className={styles.heroImage}
+            src="/images/hero-editorial.png"
+            alt="Model reclining in a burgundy velvet suit against warm walnut panels"
+            fill
+            priority
+            sizes="(max-width: 1120px) 100vw, 1120px"
+          />
+          <div className={styles.heroCopy}>
+            <p>Which sets the character the entire collection</p>
+          </div>
+        </section>
+
+        <section id="collection" className={styles.editorialGrid} aria-label="Collection stories">
+          <EditorialTile
+            image="/images/tile-glove.png"
+            alt="Cream leather glove with ivory knit sleeve and dark tailored trousers"
+            eyebrow="A silhouette that remembers you"
+            priority
+          />
+          <EditorialTile
+            image="/images/tile-shoes.png"
+            alt="Dark brown leather slingback heel on a quilted chocolate leather bag"
+            eyebrow="Nothing loud. Everything intentional"
+          />
+        </section>
+
+        <section id="story" className={styles.storyGrid} aria-label="Bold shape story">
+          <div className={styles.storyImage}>
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+              src="/images/tile-look.png"
+              alt="Model in a black leather dress seated against a walnut wall"
+              fill
+              sizes="(max-width: 760px) 100vw, 560px"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          </div>
+
+          <div className={styles.storyPanel}>
+            <div className={styles.featuredProducts}>
+              {featuredProducts.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  compact
+                  priority={index === 0}
+                />
+              ))}
+            </div>
+
+            <div id="journal" className={styles.storyCopy}>
+              <strong>Bold shape</strong>
+              <p>
+                Angela is wearing the Araz Jacket in Darkest Navy, Rond T-Shirt
+                in Black Grape, Hera Pant in Cocoa and the Moon Shoes in Black.
+              </p>
+              <Link href="#selected-products">Shop Now</Link>
+            </div>
+          </div>
+        </section>
+
+        <section id="selected-products" className={styles.selected} aria-label="Selected products">
+          <div className={styles.selectedHeader}>
+            <h2>Selected products</h2>
+            <div className={styles.pager} aria-label="Product carousel navigation">
+              <span>Prev</span>
+              <span>/</span>
+              <span>Next</span>
+            </div>
+          </div>
+
+          <div className={styles.productGrid}>
+            {selectedProducts.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                priority={index < 2}
+              />
+            ))}
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }

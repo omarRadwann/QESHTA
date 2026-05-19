@@ -1,0 +1,52 @@
+.card,
+.compactCard {
+  color: #050505;
+  min-width: 0;
+}
+
+.imageFrame {
+  aspect-ratio: 1;
+  background: #f4f3f0;
+  display: block;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.imageFrame img {
+  object-fit: contain;
+  padding: 8%;
+}
+
+.card h3,
+.compactCard h3 {
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 18px 0 8px;
+}
+
+.card p,
+.compactCard p {
+  font-size: 0.88rem;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.compactCard h3 {
+  font-size: 0.78rem;
+  margin-top: 12px;
+}
+
+.compactCard p {
+  font-size: 0.78rem;
+}
+
+@media (max-width: 760px) {
+  .card h3,
+  .compactCard h3,
+  .card p,
+  .compactCard p {
+    font-size: 0.78rem;
+  }
+}
