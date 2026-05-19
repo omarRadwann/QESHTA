@@ -85,7 +85,7 @@ export default function Home() {
         <section id="story" className={styles.storyGrid} aria-label="Bold shape story">
           <div className={styles.storyImage}>
             <img
-              src={assetPath("/images/tile-look.png")}
+              src={assetPath("/images/tile-look-wide.png")}
               alt="Model in a black leather dress seated against a walnut wall"
               loading="lazy"
             />
