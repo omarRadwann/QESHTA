@@ -1,0 +1,108 @@
+.banner {
+  background: #20140e;
+  grid-column: 1 / -1;
+  min-height: clamp(260px, 34vw, 430px);
+  overflow: hidden;
+  position: relative;
+}
+
+.backdrop {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+}
+
+.inset {
+  background: #f2f0ec;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 12%);
+  height: 72%;
+  left: 50%;
+  max-height: 300px;
+  max-width: 450px;
+  overflow: hidden;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 36%;
+  z-index: 1;
+}
+
+.inset > img {
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 55%;
+  width: 100%;
+}
+
+.thumbnails {
+  bottom: 10px;
+  display: flex;
+  gap: 5px;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.thumbnails span {
+  background: #f4f2ef;
+  display: block;
+  height: 34px;
+  overflow: hidden;
+  width: 28px;
+}
+
+.thumbnails img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.leftCopy,
+.rightCopy {
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  position: absolute;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+.leftCopy {
+  left: 18%;
+  top: 52%;
+}
+
+.rightCopy {
+  right: 16%;
+  top: 48%;
+}
+
+@media (max-width: 760px) {
+  .banner {
+    min-height: 360px;
+  }
+
+  .backdrop {
+    object-position: 63% center;
+  }
+
+  .inset {
+    height: 52%;
+    min-width: 220px;
+    width: 54%;
+  }
+
+  .leftCopy {
+    left: 24px;
+    top: 58%;
+  }
+
+  .rightCopy {
+    right: 24px;
+    top: 36%;
+  }
+}

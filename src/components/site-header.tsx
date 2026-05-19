@@ -4,22 +4,29 @@ import { assetPath } from "@/lib/assets";
 import styles from "./site-header.module.css";
 
 const primaryNav = [
-  { label: "New in", href: "#selected-products" },
-  { label: "Shop", href: "#collection" },
-  { label: "About Us", href: "#story" },
-  { label: "Journal", href: "#journal" },
+  { label: "New in", href: "/shop" },
+  { label: "Shop", href: "/shop" },
+  { label: "About Us", href: "/#story" },
+  { label: "Journal", href: "/#journal" },
 ];
 
 const utilityNav = [
   { label: "ENG", href: "/" },
-  { label: "Search", href: "#selected-products" },
+  { label: "Search", href: "/shop#shop-search" },
   { label: "Account", href: "#account" },
   { label: "Cart (0)", href: "#cart" },
 ];
 
-export function SiteHeader() {
+type SiteHeaderProps = {
+  variant?: "overlay" | "light";
+};
+
+export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
   return (
-    <header className={styles.header} aria-label="QESHTA storefront header">
+    <header
+      className={`${styles.header} ${variant === "light" ? styles.light : ""}`}
+      aria-label="QESHTA storefront header"
+    >
       <nav className={styles.navGroup} aria-label="Main navigation">
         {primaryNav.map((item) => (
           <Link key={item.label} href={item.href}>

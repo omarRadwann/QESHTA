@@ -8,16 +8,18 @@ type ProductCardProps = {
   product: Product;
   priority?: boolean;
   compact?: boolean;
+  href?: string;
 };
 
 export function ProductCard({
   product,
   priority = false,
   compact = false,
+  href = "#selected-products",
 }: ProductCardProps) {
   return (
-    <article className={compact ? styles.compactCard : styles.card}>
-      <Link className={styles.imageFrame} href="#selected-products" aria-label={`View ${product.name}`}>
+    <article id={product.id} className={compact ? styles.compactCard : styles.card}>
+      <Link className={styles.imageFrame} href={href} aria-label={`View ${product.name}`}>
         <img
           src={assetPath(product.image)}
           alt={product.alt}

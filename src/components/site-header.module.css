@@ -11,6 +11,13 @@
   z-index: 5;
 }
 
+.light {
+  color: #050505;
+  inset: auto;
+  padding: 28px 24px 22px;
+  position: relative;
+}
+
 .navGroup,
 .navGroupRight {
   align-items: center;
@@ -41,6 +48,10 @@
   width: 100%;
 }
 
+.light .logo img {
+  filter: none;
+}
+
 @media (max-width: 760px) {
   .header {
     font-size: 0.66rem;
@@ -48,6 +59,10 @@
     grid-template-columns: 1fr;
     inset: 22px 18px auto;
     justify-items: center;
+  }
+
+  .light {
+    padding: 20px 16px 16px;
   }
 
   .navGroup,

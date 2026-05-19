@@ -1,0 +1,206 @@
+.catalog {
+  padding: 12px 24px 0;
+}
+
+.headingRow,
+.searchRow,
+.categoryBar,
+.resultMeta {
+  align-items: center;
+  display: flex;
+}
+
+.headingRow {
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.headingRow p,
+.resultMeta {
+  font-size: 0.72rem;
+  font-weight: 800;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.filterToggle,
+.clearButton,
+.loadMore,
+.emptyState button,
+.categoryBar button {
+  background: transparent;
+  border: 1px solid #050505;
+  color: #050505;
+  cursor: pointer;
+  font-size: 0.72rem;
+  line-height: 1;
+  min-height: 28px;
+  padding: 0 12px;
+}
+
+.filterToggle {
+  border: 0;
+  padding-right: 0;
+}
+
+.filterToggle::before {
+  content: "";
+  border-bottom: 1px solid currentColor;
+  border-top: 1px solid currentColor;
+  display: inline-block;
+  height: 5px;
+  margin-right: 6px;
+  width: 10px;
+}
+
+.searchRow {
+  gap: 10px;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.searchRow label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.searchRow input,
+.searchRow select {
+  background: #ffffff;
+  border: 1px solid #050505;
+  border-radius: 0;
+  font-size: 0.75rem;
+  min-height: 30px;
+  padding: 0 9px;
+}
+
+.searchRow input {
+  width: min(260px, 36vw);
+}
+
+.categoryBar {
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 22px;
+}
+
+.categoryBar button {
+  border-color: #b7b7b3;
+}
+
+.categoryBar .activeCategory {
+  background: #050505;
+  border-color: #050505;
+  color: #ffffff;
+}
+
+.filters {
+  border-top: 1px solid #deded9;
+  display: none;
+  gap: 28px;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  margin: 0 0 24px;
+  padding: 18px 0;
+}
+
+.filtersOpen {
+  display: grid;
+}
+
+.filters fieldset {
+  border: 0;
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.filters legend {
+  font-size: 0.72rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.filters label {
+  align-items: center;
+  display: flex;
+  font-size: 0.75rem;
+  gap: 8px;
+}
+
+.filters input {
+  accent-color: #050505;
+}
+
+.clearButton {
+  align-self: start;
+}
+
+.resultMeta {
+  justify-content: flex-end;
+  margin: -8px 0 14px;
+}
+
+.grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.emptyState {
+  align-items: center;
+  border: 1px solid #deded9;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+  min-height: 280px;
+}
+
+.emptyState p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.loadMore,
+.endLabel {
+  display: block;
+  margin: 46px auto 0;
+}
+
+.endLabel {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .grid,
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .catalog {
+    padding-inline: 16px;
+  }
+
+  .searchRow {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .searchRow input {
+    width: 100%;
+  }
+
+  .grid,
+  .filters {
+    grid-template-columns: 1fr;
+  }
+}

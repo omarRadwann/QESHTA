@@ -1,0 +1,105 @@
+.footer {
+  background: #ffffff;
+  color: #050505;
+  padding: 72px 24px 30px;
+}
+
+.columns {
+  display: grid;
+  gap: 48px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.columns nav,
+.newsletter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.columns h2 {
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.columns a,
+.newsletter p,
+.newsletter label,
+.legal a {
+  font-size: 0.75rem;
+  line-height: 1.25;
+  text-decoration: none;
+}
+
+.newsletter p {
+  margin: 0 0 12px;
+}
+
+.newsletter label {
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.newsletter div {
+  align-items: center;
+  border-bottom: 1px solid #050505;
+  display: flex;
+  gap: 8px;
+}
+
+.newsletter input {
+  border: 0;
+  flex: 1;
+  min-width: 0;
+  outline: 0;
+  padding: 9px 0;
+}
+
+.newsletter button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.wordmark {
+  font-size: clamp(5rem, 17vw, 17rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 0.85;
+  margin: 56px 0 22px;
+  text-align: center;
+}
+
+.wordmark sup {
+  font-size: 0.12em;
+  top: -0.55em;
+}
+
+.legal {
+  display: flex;
+  gap: 32px;
+}
+
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .footer {
+    padding-inline: 16px;
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
