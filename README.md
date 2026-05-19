@@ -46,3 +46,13 @@ npm run dev
 ```
 
 Set `NEXT_PUBLIC_SITE_URL` before production deployment so canonical URLs and schema use the final domain.
+
+## Deployment
+
+The repository includes a GitHub Actions workflow that exports the app as a static Next.js site and deploys it to GitHub Pages.
+
+Production URL:
+
+```text
+https://omarradwann.github.io/QESHTA/
+```
