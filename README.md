@@ -6,8 +6,9 @@ Next.js storefront for QESHTA, a quiet luxury clothing ecommerce brand.
 
 - Next.js 16 App Router
 - TypeScript
-- Supabase Auth and Postgres profiles
+- Supabase Auth, customer profiles, and admin roles
 - Supabase-backed saved carts and order capture
+- Protected admin dashboard for orders, customers, and inventory operations
 - Tailwind CSS 4 available, with custom CSS modules for the homepage art direction
 - SEO-ready metadata, robots, sitemap, Open Graph, Twitter cards, and JSON-LD product data
 
@@ -17,6 +18,7 @@ Next.js storefront for QESHTA, a quiet luxury clothing ecommerce brand.
 src/
   app/
     account/
+    admin/
     cart/
     checkout/
     shop/
@@ -28,6 +30,7 @@ src/
     sitemap.ts
   components/
     account-client.tsx
+    admin-dashboard.tsx
     cart-client.tsx
     checkout-client.tsx
     editorial-tile.tsx
@@ -59,6 +62,7 @@ public/
 supabase/
   schema.sql
 scripts/
+  create-admin-user.mjs
   create-demo-user.mjs
 ```
 
@@ -85,11 +89,14 @@ Do not expose `SUPABASE_SERVICE_ROLE_KEY` in client builds.
 The schema creates:
 
 - Customer profiles keyed to `auth.users`
+- Admin/customer account roles with guarded role updates
+- Catalog product inventory and merchandising controls
 - Saved carts and cart line items
 - Customer orders and order line items
-- RLS policies so authenticated customers can only read/write their own records
+- RLS policies so customers only access their own records and admins can manage back-office data
+- Atomic order creation that validates active products, uses server-side prices, and decrements stock
 
-To create a confirmed demo account from your local machine:
+To create a confirmed customer account from your local machine:
 
 ```bash
 $env:NEXT_PUBLIC_SUPABASE_URL="https://PROJECT.supabase.co"
@@ -98,6 +105,24 @@ $env:SUPABASE_DEMO_EMAIL="customer@qeshta.com"
 $env:SUPABASE_DEMO_PASSWORD="change-this-password"
 npm run supabase:create-demo-user
 ```
+
+To create or update an admin account:
+
+```bash
+$env:NEXT_PUBLIC_SUPABASE_URL="https://PROJECT.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY="<your-service-role-key>"
+$env:SUPABASE_ADMIN_EMAIL="admin@qeshta.com"
+$env:SUPABASE_ADMIN_PASSWORD="change-this-password"
+npm run supabase:create-admin-user
+```
+
+Admin URL:
+
+```text
+/admin/
+```
+
+Production credentials should be rotated before client handoff and managed outside the repository.
 
 ## Deployment
 

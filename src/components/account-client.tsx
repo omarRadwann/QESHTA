@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import {
@@ -15,12 +16,14 @@ type ProfileDraft = {
   fullName: string;
   marketingOptIn: boolean;
   phone: string;
+  role: "customer" | "admin";
 };
 
 const emptyProfile: ProfileDraft = {
   fullName: "",
   marketingOptIn: false,
   phone: "",
+  role: "customer",
 };
 
 export function AccountClient() {
@@ -66,7 +69,7 @@ export function AccountClient() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, phone, marketing_opt_in")
+        .select("full_name, phone, marketing_opt_in, role")
         .eq("id", activeSession.user.id)
         .maybeSingle();
 
@@ -76,12 +79,13 @@ export function AccountClient() {
       }
 
       if (!data) {
-        const fallbackProfile = {
+        const fallbackProfile: ProfileDraft = {
           ...emptyProfile,
           fullName:
             typeof activeSession.user.user_metadata.full_name === "string"
               ? activeSession.user.user_metadata.full_name
               : "",
+          role: "customer",
         };
 
         await saveProfile(activeSession, fallbackProfile, userEmail, false);
@@ -93,6 +97,7 @@ export function AccountClient() {
         fullName: data.full_name ?? "",
         marketingOptIn: data.marketing_opt_in,
         phone: data.phone ?? "",
+        role: data.role === "admin" ? "admin" : "customer",
       });
     },
     [saveProfile],
@@ -314,10 +319,20 @@ export function AccountClient() {
             <strong>Signed in</strong>
           </div>
           <div>
+            <span>Role</span>
+            <strong>{profile.role}</strong>
+          </div>
+          <div>
             <span>Email</span>
             <strong>{session.user.email}</strong>
           </div>
         </div>
+
+        {profile.role === "admin" ? (
+          <Link className={styles.adminLink} href="/admin/">
+            Open Admin Dashboard
+          </Link>
+        ) : null}
 
         {message ? <p className={styles.statusMessage}>{message}</p> : null}
       </section>

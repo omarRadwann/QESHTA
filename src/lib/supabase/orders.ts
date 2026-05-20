@@ -35,8 +35,8 @@ export async function createOrder(
         variantId: line.variantId,
         variantLabel: line.variantLabel,
       })),
-      p_notes: details.notes.trim() || null,
-      p_phone: details.phone.trim() || null,
+      p_notes: details.notes.trim(),
+      p_phone: details.phone.trim(),
       p_shipping_address: {
         addressLine1: details.addressLine1,
         city: details.city,

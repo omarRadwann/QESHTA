@@ -1,0 +1,283 @@
+.dashboard {
+  background: #ffffff;
+  color: #050505;
+  display: grid;
+  gap: 28px;
+  min-height: calc(100vh - 96px);
+  padding: clamp(28px, 4vw, 64px);
+}
+
+.adminHeader {
+  align-items: end;
+  display: flex;
+  gap: 28px;
+  justify-content: space-between;
+}
+
+.adminHeader div,
+.statePanel {
+  display: grid;
+  gap: 10px;
+}
+
+.adminHeader p,
+.statePanel p {
+  color: #6d6862;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.adminHeader h1,
+.statePanel h1,
+.dashboard h2 {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.adminHeader span,
+.statePanel span,
+.empty,
+.statusMessage {
+  color: #5f5a55;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.adminHeader a,
+.stateAction a {
+  border-bottom: 1px solid currentColor;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  padding-bottom: 3px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.viewTabs {
+  border-bottom: 1px solid #dfdbd6;
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.viewTabs button,
+.tableButton {
+  background: transparent;
+  border: 0;
+  color: #050505;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.viewTabs button {
+  border-bottom: 1px solid transparent;
+}
+
+.viewTabs .activeView {
+  border-bottom-color: currentColor;
+}
+
+.statusMessage {
+  background: #f4f1ec;
+  margin: 0;
+  padding: 12px 14px;
+}
+
+.metrics {
+  border-bottom: 1px solid #dfdbd6;
+  border-top: 1px solid #dfdbd6;
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.metric {
+  border-right: 1px solid #dfdbd6;
+  display: grid;
+  gap: 10px;
+  padding: 18px 16px;
+}
+
+.metric:last-child {
+  border-right: 0;
+}
+
+.metric span,
+.table th,
+.warning {
+  color: #6d6862;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.metric strong {
+  font-size: clamp(1.4rem, 4vw, 3.2rem);
+  font-weight: 500;
+  line-height: 0.9;
+}
+
+.splitSection {
+  display: grid;
+  gap: 36px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+}
+
+.splitSection section,
+.dashboard > section {
+  display: grid;
+  gap: 16px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.table {
+  border-collapse: collapse;
+  min-width: 820px;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.table th,
+.table td {
+  border-bottom: 1px solid #e6e2dd;
+  padding: 12px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.table td {
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.table td strong,
+.table td span {
+  display: block;
+}
+
+.table td strong {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.table td span {
+  color: #6d6862;
+  overflow-wrap: anywhere;
+}
+
+.table select,
+.table input {
+  background: #ffffff;
+  border: 1px solid #bdb7b0;
+  border-radius: 0;
+  color: #050505;
+  min-height: 32px;
+  padding: 0 8px;
+  width: 100%;
+}
+
+.table input[type="checkbox"] {
+  height: 14px;
+  min-height: 0;
+  padding: 0;
+  width: 14px;
+}
+
+.productCell {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 72px minmax(0, 1fr);
+}
+
+.productCell img {
+  background: #f4f1ec;
+  height: 72px;
+  object-fit: contain;
+  width: 72px;
+}
+
+.switchLabel {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.tableButton {
+  border-bottom: 1px solid currentColor;
+}
+
+.tableButton:disabled,
+.viewTabs button:disabled,
+.table select:disabled,
+.table input:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.warning {
+  color: #9a4f28;
+  margin-top: 8px;
+}
+
+.empty {
+  margin: 0;
+}
+
+.statePanel {
+  align-content: center;
+  background: #ffffff;
+  min-height: calc(100vh - 96px);
+  padding: clamp(44px, 8vw, 90px);
+}
+
+.stateAction {
+  margin-top: 12px;
+}
+
+@media (max-width: 980px) {
+  .dashboard {
+    padding: 28px 20px 56px;
+  }
+
+  .adminHeader,
+  .splitSection {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric {
+    border-bottom: 1px solid #dfdbd6;
+  }
+}
+
+@media (max-width: 560px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .metric {
+    border-right: 0;
+  }
+}

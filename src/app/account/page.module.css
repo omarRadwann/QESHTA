@@ -169,6 +169,18 @@
   color: #57514c;
 }
 
+.adminLink {
+  align-items: center;
+  background: #050505;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 0.76rem;
+  justify-content: center;
+  min-height: 38px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
 @media (max-width: 640px) {
   .accountHeader,
   .summaryGrid {

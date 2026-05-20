@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CART_CHANGE_EVENT, getCartCount, readCart } from "@/lib/cart";
 import { assetPath } from "@/lib/assets";
+import {
+  getSupabaseBrowserClient,
+  isSupabaseConfigured,
+} from "@/lib/supabase/client";
 import styles from "./site-header.module.css";
 
 const primaryNav = [
@@ -27,6 +31,7 @@ type SiteHeaderProps = {
 
 export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
   const [cartCount, setCartCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     function syncCartCount() {
@@ -42,6 +47,57 @@ export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
       window.removeEventListener("storage", syncCartCount);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    let isMounted = true;
+    const supabase = getSupabaseBrowserClient();
+
+    async function syncAdminLink() {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error || !data.session) {
+          if (isMounted) setIsAdmin(false);
+          return;
+        }
+
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.session.user.id)
+          .maybeSingle();
+
+        if (isMounted) setIsAdmin(!profileError && profile?.role === "admin");
+      } catch {
+        if (isMounted) setIsAdmin(false);
+      }
+    }
+
+    void syncAdminLink();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      window.setTimeout(() => {
+        void syncAdminLink();
+      }, 0);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const utilityItems = isAdmin
+    ? [
+        ...utilityNav.slice(0, 3),
+        { id: "admin", label: "Admin", href: "/admin/" },
+        utilityNav[3],
+      ]
+    : utilityNav;
 
   return (
     <header
@@ -66,7 +122,7 @@ export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
       </Link>
 
       <nav className={styles.navGroupRight} aria-label="Store navigation">
-        {utilityNav.map((item) => (
+        {utilityItems.map((item) => (
           <Link key={item.id} href={item.href}>
             {item.id === "cart" ? `${item.label} (${cartCount})` : item.label}
           </Link>
