@@ -9,7 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     {
-      url: siteConfig.siteUrl,
+      url: `${siteConfig.siteUrl}/`,
       lastModified,
       changeFrequency: "weekly",
       priority: 1,
@@ -19,18 +19,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "weekly",
       priority: 0.9,
-    },
-    {
-      url: `${siteConfig.siteUrl}/account/`,
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.4,
-    },
-    {
-      url: `${siteConfig.siteUrl}/cart/`,
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.4,
     },
     ...allProducts.map((product) => ({
       url: `${siteConfig.siteUrl}${getProductUrl(product)}`,

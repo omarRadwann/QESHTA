@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { assetPath, siteAssetUrl } from "@/lib/assets";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     images: [
       {
-        url: "/images/hero-editorial.jpg",
+        url: siteAssetUrl("/images/hero-editorial.jpg"),
         width: 1500,
         height: 844,
         alt: "QESHTA burgundy velvet tailoring campaign",
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "QESHTA | Sculpted Clothing and Quiet Luxury Essentials",
     description: siteConfig.description,
-    images: ["/images/hero-editorial.jpg"],
+    images: [siteAssetUrl("/images/hero-editorial.jpg")],
   },
   robots: {
     index: true,
@@ -51,7 +52,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: assetPath("/favicon.ico"),
   },
 };
 

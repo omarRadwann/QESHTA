@@ -10,7 +10,7 @@ import {
   productSchema,
   selectedProducts,
 } from "@/data/products";
-import { assetPath } from "@/lib/assets";
+import { assetPath, siteAssetUrl } from "@/lib/assets";
 import { siteConfig } from "@/lib/site";
 import styles from "./page.module.css";
 
@@ -22,7 +22,7 @@ export default function Home() {
       name: siteConfig.name,
       legalName: siteConfig.legalName,
       url: siteConfig.siteUrl,
-      logo: `${siteConfig.siteUrl}/images/qeshta-logo.png`,
+      logo: siteAssetUrl("/images/qeshta-logo.png"),
       description: siteConfig.description,
     },
     {
@@ -30,11 +30,6 @@ export default function Home() {
       "@type": "WebSite",
       name: siteConfig.name,
       url: siteConfig.siteUrl,
-      potentialAction: {
-        "@type": "SearchAction",
-        target: `${siteConfig.siteUrl}/search?q={search_term_string}`,
-        "query-input": "required name=search_term_string",
-      },
     },
     {
       "@context": "https://schema.org",

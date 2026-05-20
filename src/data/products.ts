@@ -1,4 +1,5 @@
 import { siteConfig } from "@/lib/site";
+import { siteAssetUrl } from "@/lib/assets";
 
 export const shopCategories = [
   "View All",
@@ -473,7 +474,7 @@ export function productSchema(product: Product) {
     category: product.category,
     color: product.color,
     material: product.material,
-    image: `${siteConfig.siteUrl}${product.image}`,
+    image: siteAssetUrl(product.image),
     brand: {
       "@type": "Brand",
       name: siteConfig.name,

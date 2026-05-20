@@ -10,6 +10,7 @@ import {
   productSchema,
   shopProducts,
 } from "@/data/products";
+import { siteAssetUrl } from "@/lib/assets";
 import { siteConfig } from "@/lib/site";
 import styles from "./page.module.css";
 
@@ -40,6 +41,7 @@ export async function generateMetadata({
   }
 
   const productUrl = getProductUrl(product);
+  const socialImage = siteAssetUrl(product.detailHeroImage ?? product.image);
 
   return {
     title: product.name,
@@ -54,7 +56,7 @@ export async function generateMetadata({
       siteName: siteConfig.name,
       images: [
         {
-          url: product.detailHeroImage ?? product.image,
+          url: socialImage,
           width: 1200,
           height: 1600,
           alt: product.detailHeroAlt ?? product.alt,
@@ -65,7 +67,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: `${product.name} | QESHTA`,
       description: product.description,
-      images: [product.detailHeroImage ?? product.image],
+      images: [socialImage],
     },
   };
 }

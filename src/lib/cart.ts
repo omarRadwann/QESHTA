@@ -45,9 +45,10 @@ export function addCartLine(line: NewCartLine) {
   const key = makeCartLineKey(line.productId, line.variantId, line.size);
   const cart = readCart();
   const existingLine = cart.find((item) => item.key === key);
+  const quantity = Math.max(1, normalizeQuantity(line.quantity ?? 1));
 
   if (existingLine) {
-    existingLine.quantity += line.quantity ?? 1;
+    existingLine.quantity += quantity;
     writeCart(cart);
     return cart;
   }
@@ -57,7 +58,7 @@ export function addCartLine(line: NewCartLine) {
     {
       ...line,
       key,
-      quantity: line.quantity ?? 1,
+      quantity,
     },
   ];
   writeCart(nextCart);
@@ -65,8 +66,9 @@ export function addCartLine(line: NewCartLine) {
 }
 
 export function updateCartLineQuantity(key: string, quantity: number) {
+  const nextQuantity = normalizeQuantity(quantity, 0);
   const nextCart = readCart()
-    .map((line) => (line.key === key ? { ...line, quantity } : line))
+    .map((line) => (line.key === key ? { ...line, quantity: nextQuantity } : line))
     .filter((line) => line.quantity > 0);
   writeCart(nextCart);
   return nextCart;
@@ -92,10 +94,20 @@ function isCartLine(value: unknown): value is CartLine {
     typeof line.productId === "string" &&
     typeof line.name === "string" &&
     typeof line.price === "number" &&
+    Number.isFinite(line.price) &&
+    line.price >= 0 &&
     typeof line.image === "string" &&
     typeof line.variantId === "string" &&
     typeof line.variantLabel === "string" &&
     typeof line.size === "string" &&
-    typeof line.quantity === "number"
+    typeof line.quantity === "number" &&
+    Number.isFinite(line.quantity) &&
+    Number.isInteger(line.quantity) &&
+    line.quantity > 0
   );
+}
+
+function normalizeQuantity(quantity: number, fallback = 1) {
+  if (!Number.isFinite(quantity)) return fallback;
+  return Math.max(0, Math.floor(quantity));
 }

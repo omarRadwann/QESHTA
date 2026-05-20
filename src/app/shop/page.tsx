@@ -4,6 +4,7 @@ import { ShopCatalog } from "@/components/shop-catalog";
 import { ShopFooter } from "@/components/shop-footer";
 import { SiteHeader } from "@/components/site-header";
 import { productSchema, shopProducts } from "@/data/products";
+import { siteAssetUrl } from "@/lib/assets";
 import { siteConfig } from "@/lib/site";
 import styles from "./page.module.css";
 
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: "/images/shop-editorial-banner.jpg",
+        url: siteAssetUrl("/images/shop-editorial-banner.jpg"),
         width: 1600,
         height: 640,
         alt: "QESHTA leather styling campaign",
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     title: "Shop Spring 26 Clothing, Shoes and Accessories | QESHTA",
     description:
       "Shop the QESHTA Spring 26 edit of sculpted jackets, dresses, shoes, bags, and jewelry.",
-    images: ["/images/shop-editorial-banner.jpg"],
+    images: [siteAssetUrl("/images/shop-editorial-banner.jpg")],
   },
 };
 

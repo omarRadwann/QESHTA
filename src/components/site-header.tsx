@@ -8,15 +8,15 @@ import { assetPath } from "@/lib/assets";
 import styles from "./site-header.module.css";
 
 const primaryNav = [
-  { label: "New in", href: "/shop" },
-  { label: "Shop", href: "/shop" },
+  { label: "New in", href: "/shop/" },
+  { label: "Shop", href: "/shop/" },
   { label: "About Us", href: "/#story" },
   { label: "Journal", href: "/#journal" },
 ];
 
 const utilityNav = [
   { id: "language", label: "ENG", href: "/" },
-  { id: "search", label: "Search", href: "/shop#shop-search" },
+  { id: "search", label: "Search", href: "/shop/#shop-search" },
   { id: "account", label: "Account", href: "/account/" },
   { id: "cart", label: "Cart", href: "/cart/" },
 ];

@@ -143,7 +143,10 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
         <select
           id="shop-sort"
           value={sort}
-          onChange={(event) => setSort(event.target.value as ShopSort)}
+          onChange={(event) => {
+            setSort(event.target.value as ShopSort);
+            resetVisibleCount();
+          }}
         >
           {shopSortOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -208,7 +211,10 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
               type="radio"
               name="price"
               checked={maxPrice === "all"}
-              onChange={() => setMaxPrice("all")}
+              onChange={() => {
+                setMaxPrice("all");
+                resetVisibleCount();
+              }}
             />
             All prices
           </label>

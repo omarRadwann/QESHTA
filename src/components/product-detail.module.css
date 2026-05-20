@@ -41,7 +41,8 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  padding: clamp(18px, 2.8vh, 34px) clamp(34px, 5.4vw, 96px) 24px;
+  padding: clamp(18px, 2.8vh, 34px) clamp(34px, 5.4vw, 96px)
+    clamp(42px, 6vh, 72px);
 }
 
 .purchasePanel > * {
@@ -230,18 +231,6 @@
   color: #77736e;
 }
 
-.srOnly {
-  border: 0;
-  clip: rect(0, 0, 0, 0);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  white-space: nowrap;
-  width: 1px;
-}
-
 @media (hover: hover) {
   .variantList button:hover,
   .cartButton:hover {
@@ -280,7 +269,7 @@
   .purchasePanel {
     height: auto;
     overflow: visible;
-    padding: 34px 20px 28px;
+    padding: 34px 20px 52px;
   }
 }
 

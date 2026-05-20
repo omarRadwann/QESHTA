@@ -28,7 +28,7 @@ export function ShopFooter() {
           <nav key={group.title} aria-label={group.title}>
             <h2>{group.title}</h2>
             {group.links.map((link) => (
-              <Link key={link} href="/shop">
+              <Link key={link} href="/shop/">
                 {link}
               </Link>
             ))}

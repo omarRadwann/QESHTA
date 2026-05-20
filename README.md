@@ -14,6 +14,10 @@ Next.js storefront for QESHTA, a quiet luxury clothing ecommerce brand.
 ```text
 src/
   app/
+    account/
+    cart/
+    checkout/
+    shop/
     globals.css
     layout.tsx
     page.tsx
@@ -21,22 +25,28 @@ src/
     robots.ts
     sitemap.ts
   components/
+    cart-client.tsx
     editorial-tile.tsx
     json-ld.tsx
     product-card.tsx
+    product-detail.tsx
+    shop-catalog.tsx
+    shop-footer.tsx
     site-header.tsx
   data/
     products.ts
   lib/
+    assets.ts
+    cart.ts
     site.ts
 public/
   images/
     qeshta-logo.png
-    hero-editorial.png
-    tile-glove.png
-    tile-shoes.png
-    tile-look.png
-    product-*.png
+    hero-editorial.jpg
+    tile-glove.jpg
+    tile-shoes.jpg
+    tile-look-wide.jpg
+    product-*.jpg
 ```
 
 ## Development

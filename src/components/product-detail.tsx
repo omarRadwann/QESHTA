@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   formatPrice,
   getProductTabs,
@@ -44,6 +44,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const [activeTab, setActiveTab] = useState<ProductDetailTab["id"]>(tabs[0].id);
   const [cartState, setCartState] = useState<"idle" | "added">("idle");
   const [lastAddedLabel, setLastAddedLabel] = useState("");
+  const cartStateResetTimer = useRef<number | null>(null);
 
   const activeTabContent = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
   const hasVariantChoices = Boolean(product.variants && product.variants.length > 1);
@@ -51,7 +52,19 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const mediaAlt = selectedVariant.detailHeroAlt ?? product.detailHeroAlt ?? product.alt;
   const hasEditorialMedia = Boolean(selectedVariant.detailHeroImage ?? product.detailHeroImage);
 
+  useEffect(() => {
+    return () => {
+      if (cartStateResetTimer.current) {
+        window.clearTimeout(cartStateResetTimer.current);
+      }
+    };
+  }, []);
+
   function addToCart() {
+    if (cartStateResetTimer.current) {
+      window.clearTimeout(cartStateResetTimer.current);
+    }
+
     addCartLine({
       productId: product.id,
       name: product.name,
@@ -63,7 +76,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
     });
     setLastAddedLabel(`${selectedVariant.label} / ${selectedSize}`);
     setCartState("added");
-    window.setTimeout(() => setCartState("idle"), 1800);
+    cartStateResetTimer.current = window.setTimeout(() => {
+      setCartState("idle");
+      cartStateResetTimer.current = null;
+    }, 1800);
   }
 
   return (
