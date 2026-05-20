@@ -29,6 +29,11 @@
   margin: 0;
 }
 
+.syncMessage {
+  color: #67615b;
+  font-size: 0.74rem;
+}
+
 .emptyAction,
 .checkoutLink,
 .summary button,
