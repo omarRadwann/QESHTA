@@ -1,0 +1,278 @@
+.detail {
+  background: #ffffff;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 690px;
+}
+
+.mediaPanel {
+  background: #f2f2f1;
+  min-height: 690px;
+  overflow: hidden;
+}
+
+.mediaPanel img {
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  width: 100%;
+}
+
+.purchasePanel {
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  min-height: 690px;
+  padding: 62px 34px 32px;
+}
+
+.metaRow {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  min-height: 66px;
+}
+
+.metaRow h1,
+.metaRow p {
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.metaRow p {
+  margin-top: 7px;
+}
+
+.metaRow span {
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.displayImageFrame {
+  align-items: center;
+  display: flex;
+  flex: 0 0 230px;
+  justify-content: center;
+  margin: 4px auto 22px;
+  width: min(300px, 76%);
+}
+
+.displayImageFrame img {
+  animation: productImageIn 260ms ease both;
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.variantList {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 0 auto 30px;
+}
+
+.variantList button {
+  background: #f5f3f0;
+  border: 1px solid transparent;
+  cursor: pointer;
+  height: 50px;
+  padding: 4px;
+  transition: border-color 160ms ease, transform 160ms ease;
+  width: 50px;
+}
+
+.variantList img {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.variantList .activeVariant {
+  border-color: #050505;
+}
+
+.sizeRow {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sizeList {
+  display: flex;
+  gap: 24px;
+}
+
+.sizeList button,
+.fitButton,
+.tabs button,
+.footerLine a {
+  background: transparent;
+  border: 0;
+  color: #050505;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0;
+  text-decoration: none;
+}
+
+.sizeList button,
+.fitButton {
+  border-bottom: 1px solid transparent;
+  padding-bottom: 3px;
+}
+
+.sizeList .activeSize,
+.fitButton,
+.footerLine a {
+  border-bottom-color: currentColor;
+}
+
+.cartButton {
+  background: #050505;
+  border: 1px solid #050505;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 500;
+  height: 40px;
+  margin-bottom: 24px;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+  width: 100%;
+}
+
+.tabs {
+  display: flex;
+  gap: 34px;
+  margin-bottom: 15px;
+}
+
+.tabs button {
+  border-bottom: 1px solid transparent;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.tabs .activeTab {
+  border-bottom-color: currentColor;
+}
+
+.detailCopy {
+  font-size: 0.76rem;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 520px;
+  min-height: 68px;
+}
+
+.footerLine {
+  align-items: center;
+  color: #77736e;
+  display: flex;
+  font-size: 0.7rem;
+  font-weight: 800;
+  justify-content: space-between;
+  margin-top: auto;
+  text-transform: uppercase;
+}
+
+.footerLine span {
+  color: #77736e;
+}
+
+.srOnly {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+@media (hover: hover) {
+  .variantList button:hover,
+  .cartButton:hover {
+    transform: translateY(-1px);
+  }
+
+  .cartButton:hover {
+    background: #ffffff;
+    color: #050505;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .detail {
+    animation: productShellIn 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+@media (max-width: 900px) {
+  .detail {
+    grid-template-columns: 1fr;
+  }
+
+  .mediaPanel,
+  .purchasePanel {
+    min-height: auto;
+  }
+
+  .mediaPanel {
+    aspect-ratio: 4 / 5;
+  }
+
+  .purchasePanel {
+    padding: 34px 20px 28px;
+  }
+}
+
+@media (max-width: 520px) {
+  .displayImageFrame {
+    flex-basis: 190px;
+    width: 80%;
+  }
+
+  .sizeList {
+    gap: 18px;
+  }
+
+  .tabs {
+    gap: 16px;
+    justify-content: space-between;
+  }
+}
+
+@keyframes productShellIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes productImageIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

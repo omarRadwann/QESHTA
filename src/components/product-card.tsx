@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { formatPrice, type Product } from "@/data/products";
+import { formatPrice, getProductUrl, type Product } from "@/data/products";
 import { assetPath } from "@/lib/assets";
 import styles from "./product-card.module.css";
 
@@ -17,7 +17,7 @@ export function ProductCard({
   product,
   priority = false,
   compact = false,
-  href = "#selected-products",
+  href = getProductUrl(product),
   revealIndex = 0,
 }: ProductCardProps) {
   return (

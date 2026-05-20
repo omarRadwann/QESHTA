@@ -15,7 +15,7 @@ export function EditorialTile({
   image,
   alt,
   eyebrow,
-  href = "#selected-products",
+  href = "/shop/",
   priority = false,
 }: EditorialTileProps) {
   return (

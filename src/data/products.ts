@@ -20,6 +20,24 @@ export const shopSortOptions = [
 export type ShopCategory = (typeof shopCategories)[number];
 export type ShopSort = (typeof shopSortOptions)[number]["value"];
 
+export const productSizes = ["XS", "S", "M", "L", "XL"] as const;
+
+export type ProductSize = (typeof productSizes)[number];
+
+export type ProductDetailTab = {
+  id: "description" | "size-fit" | "material" | "care";
+  label: string;
+  body: string;
+};
+
+export type ProductVariant = {
+  id: string;
+  label: string;
+  color: string;
+  image: string;
+  thumbnail?: string;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -34,6 +52,11 @@ export type Product = {
   tags: string[];
   featured?: boolean;
   isNew?: boolean;
+  detailHeroImage?: string;
+  detailHeroAlt?: string;
+  detailTabs?: ProductDetailTab[];
+  fitNote?: string;
+  variants?: ProductVariant[];
 };
 
 export const shopProducts: Product[] = [
@@ -99,8 +122,8 @@ export const shopProducts: Product[] = [
     featured: true,
   },
   {
-    id: "rond-wrap-jacket",
-    name: "Rond Leather Wrap Jacket",
+    id: "ansel-opulent-leather-jacket",
+    name: "Ansel Opulent Leather Jacket",
     price: 1500,
     image: "/images/product-espresso-wrap-jacket.jpg",
     alt: "Dark espresso leather wrap jacket on a warm off-white background",
@@ -110,7 +133,37 @@ export const shopProducts: Product[] = [
     collection: "Spring 26",
     description:
       "A fitted espresso leather wrap jacket with a sharp lapel and waist tie.",
-    tags: ["jacket", "leather", "espresso", "wrap"],
+    tags: ["jacket", "leather", "espresso", "wrap", "new"],
+    isNew: true,
+    detailHeroImage: "/images/product-detail-leather-jacket-chair.jpg",
+    detailHeroAlt:
+      "Model wearing an espresso leather wrap jacket while seated in a black leather lounge chair",
+    detailTabs: [
+      {
+        id: "description",
+        label: "Description",
+        body:
+          "A lustrous leather jacket cut with sculptural grace and a sharply wrapped waist. The lapel sits clean and the body is shaped for a close, confident fit.",
+      },
+      {
+        id: "size-fit",
+        label: "Size & Fit",
+        body:
+          "True to size. Recommended to take your normal size. Model is 178 / 5'8 and is wearing a size 36.",
+      },
+      {
+        id: "material",
+        label: "Material",
+        body:
+          "Smooth espresso leather with a soft lining, structured collar, and concealed interior finishing.",
+      },
+      {
+        id: "care",
+        label: "Care",
+        body:
+          "Specialist leather clean only. Hang on a shaped hanger and avoid moisture, heat, and direct sunlight.",
+      },
+    ],
   },
   {
     id: "moon-ivory-slingback",
@@ -127,18 +180,74 @@ export const shopProducts: Product[] = [
     tags: ["shoe", "heel", "ivory", "slingback"],
   },
   {
-    id: "onyx-split-skirt",
-    name: "Onyx Split Skirt",
-    price: 1200,
-    image: "/images/product-graphite-skirt.jpg",
-    alt: "Graphite gray midi skirt with a front slit on a warm off-white background",
+    id: "ansel-opulent-skirt",
+    name: "Ansel Opulent Leather Skirt",
+    price: 1000,
+    image: "/images/product-skirt-burgundy.jpg",
+    alt: "Burgundy opulent leather skirt with a sculptural flared shape on a warm off-white background",
     category: "Bottoms",
-    color: "Graphite",
-    material: "Wool blend",
+    color: "Burgundy",
+    material: "Suede leather",
     collection: "Spring 26",
     description:
-      "Graphite midi skirt with a precise front split and clean waistband.",
-    tags: ["skirt", "bottom", "graphite", "tailoring"],
+      "A lustrous suede skirt cut with sculptural grace and dramatic flare.",
+    tags: ["skirt", "bottom", "burgundy", "leather", "suede", "new"],
+    isNew: true,
+    detailHeroImage: "/images/product-detail-skirt-chair.jpg",
+    detailHeroAlt:
+      "Burgundy suede leather skirt draped over a black tubular chair in a clean studio",
+    detailTabs: [
+      {
+        id: "description",
+        label: "Description",
+        body:
+          "A lustrous suede skirt cut with sculptural grace and dramatic flare. Sits high on the waist with paneled seams that curve, release, and move.",
+      },
+      {
+        id: "size-fit",
+        label: "Size & Fit",
+        body:
+          "True to size. Recommended to take your normal size. Model is 178 / 5'8 and is wearing a size 36.",
+      },
+      {
+        id: "material",
+        label: "Material",
+        body:
+          "Soft suede leather with a paneled interior construction and a hidden side zip for a clean line.",
+      },
+      {
+        id: "care",
+        label: "Care",
+        body:
+          "Specialist leather clean only. Store on a padded hanger away from direct sunlight and moisture.",
+      },
+    ],
+    variants: [
+      {
+        id: "burgundy",
+        label: "Burgundy",
+        color: "#4b1719",
+        image: "/images/product-skirt-burgundy.jpg",
+      },
+      {
+        id: "caramel",
+        label: "Caramel",
+        color: "#a86735",
+        image: "/images/product-skirt-caramel.jpg",
+      },
+      {
+        id: "black",
+        label: "Black",
+        color: "#111111",
+        image: "/images/product-skirt-black.jpg",
+      },
+      {
+        id: "navy",
+        label: "Navy",
+        color: "#171b3d",
+        image: "/images/product-skirt-navy.jpg",
+      },
+    ],
   },
   {
     id: "selene-ruched-dress",
@@ -304,6 +413,44 @@ export function formatPrice(price: number) {
   }).format(price);
 }
 
+export function getProductUrl(product: Product) {
+  return `/shop/${product.id}/`;
+}
+
+export function getProductById(id: string) {
+  return allProducts.find((product) => product.id === id);
+}
+
+export function getProductTabs(product: Product): ProductDetailTab[] {
+  return (
+    product.detailTabs ?? [
+      {
+        id: "description",
+        label: "Description",
+        body: product.description,
+      },
+      {
+        id: "size-fit",
+        label: "Size & Fit",
+        body:
+          product.fitNote ??
+          "True to size. Recommended to take your normal size. Model is 178 / 5'8 and is wearing a size 36.",
+      },
+      {
+        id: "material",
+        label: "Material",
+        body: `${product.material} selected for structure, comfort, and a refined hand feel.`,
+      },
+      {
+        id: "care",
+        label: "Care",
+        body:
+          "Dry clean by a specialist. Store carefully between wears and avoid prolonged direct sunlight.",
+      },
+    ]
+  );
+}
+
 export function productSchema(product: Product) {
   return {
     "@type": "Product",
@@ -322,7 +469,7 @@ export function productSchema(product: Product) {
       priceCurrency: siteConfig.currency,
       price: product.price,
       availability: "https://schema.org/InStock",
-      url: `${siteConfig.siteUrl}/shop/`,
+      url: `${siteConfig.siteUrl}${getProductUrl(product)}`,
     },
   };
 }

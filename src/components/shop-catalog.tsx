@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/product-card";
 import { ShopEditorialBanner } from "@/components/shop-editorial-banner";
 import {
+  getProductUrl,
   shopCategories,
   shopSortOptions,
   type Product,
@@ -244,7 +245,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
             <ProductCard
               key={product.id}
               product={product}
-              href={`/shop#${product.id}`}
+              href={getProductUrl(product)}
               priority={index < 4}
               revealIndex={index}
             />
@@ -256,7 +257,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
             <ProductCard
               key={product.id}
               product={product}
-              href={`/shop#${product.id}`}
+              href={getProductUrl(product)}
               revealIndex={index + 8}
             />
           ))}

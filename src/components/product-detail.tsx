@@ -1,0 +1,172 @@
+"use client";
+
+/* eslint-disable @next/next/no-img-element */
+import { useMemo, useState } from "react";
+import {
+  formatPrice,
+  getProductTabs,
+  productSizes,
+  type Product,
+  type ProductDetailTab,
+  type ProductSize,
+  type ProductVariant,
+} from "@/data/products";
+import { assetPath } from "@/lib/assets";
+import styles from "./product-detail.module.css";
+
+type ProductDetailProps = {
+  product: Product;
+};
+
+type DisplayVariant = ProductVariant & {
+  image: string;
+};
+
+function getInitialVariant(product: Product): DisplayVariant {
+  return (
+    product.variants?.[0] ?? {
+      id: "default",
+      label: product.color,
+      color: product.color,
+      image: product.image,
+    }
+  );
+}
+
+export function ProductDetail({ product }: ProductDetailProps) {
+  const tabs = useMemo(() => getProductTabs(product), [product]);
+  const [selectedVariant, setSelectedVariant] = useState<DisplayVariant>(
+    getInitialVariant(product),
+  );
+  const [selectedSize, setSelectedSize] = useState<ProductSize>(productSizes[0]);
+  const [activeTab, setActiveTab] = useState<ProductDetailTab["id"]>(tabs[0].id);
+  const [cartState, setCartState] = useState<"idle" | "added">("idle");
+
+  const activeTabContent = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
+  const hasVariantChoices = Boolean(product.variants && product.variants.length > 1);
+
+  function addToCart() {
+    setCartState("added");
+    window.setTimeout(() => setCartState("idle"), 1300);
+  }
+
+  return (
+    <section className={styles.detail} aria-labelledby="product-title">
+      <div className={styles.mediaPanel}>
+        <img
+          src={assetPath(product.detailHeroImage ?? product.image)}
+          alt={product.detailHeroAlt ?? product.alt}
+          width={1024}
+          height={1536}
+          decoding="async"
+          fetchPriority="high"
+        />
+      </div>
+
+      <div className={styles.purchasePanel}>
+        <div className={styles.metaRow}>
+          <div>
+            <h1 id="product-title">{product.name}</h1>
+            <p>${formatPrice(product.price)}</p>
+          </div>
+          {product.isNew ? <span>New</span> : null}
+        </div>
+
+        <div className={styles.displayImageFrame} aria-live="polite">
+          <img
+            key={selectedVariant.id}
+            src={assetPath(selectedVariant.image)}
+            alt={`${product.name} in ${selectedVariant.label}`}
+            width={900}
+            height={900}
+            decoding="async"
+          />
+        </div>
+
+        {hasVariantChoices ? (
+          <div className={styles.variantList} aria-label="Choose color">
+            {product.variants?.map((variant) => (
+              <button
+                key={variant.id}
+                className={variant.id === selectedVariant.id ? styles.activeVariant : ""}
+                type="button"
+                aria-label={`Show ${product.name} in ${variant.label}`}
+                aria-pressed={variant.id === selectedVariant.id}
+                onClick={() => setSelectedVariant(variant)}
+                title={variant.label}
+              >
+                <img
+                  src={assetPath(variant.thumbnail ?? variant.image)}
+                  alt=""
+                  width={120}
+                  height={120}
+                  decoding="async"
+                  loading="lazy"
+                />
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        <div className={styles.sizeRow}>
+          <div className={styles.sizeList} aria-label="Choose size">
+            {productSizes.map((size) => (
+              <button
+                key={size}
+                className={size === selectedSize ? styles.activeSize : ""}
+                type="button"
+                aria-pressed={size === selectedSize}
+                onClick={() => setSelectedSize(size)}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+          <button className={styles.fitButton} type="button">
+            Find my fit
+          </button>
+        </div>
+
+        <button className={styles.cartButton} type="button" onClick={addToCart}>
+          {cartState === "added" ? "Added" : "Add to Cart"}
+        </button>
+        <p className={styles.srOnly} aria-live="polite">
+          {cartState === "added"
+            ? `${product.name} in ${selectedVariant.label}, size ${selectedSize}, added to cart.`
+            : ""}
+        </p>
+
+        <div className={styles.tabs} role="tablist" aria-label={`${product.name} details`}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              id={`tab-${tab.id}`}
+              className={activeTab === tab.id ? styles.activeTab : ""}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`panel-${tab.id}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <p
+          id={`panel-${activeTabContent.id}`}
+          className={styles.detailCopy}
+          role="tabpanel"
+          aria-labelledby={`tab-${activeTabContent.id}`}
+        >
+          {activeTabContent.body}
+        </p>
+
+        <div className={styles.footerLine}>
+          <a href="mailto:hello@qeshta.com">Need help?</a>
+          <span>Free worldwide shipping</span>
+        </div>
+      </div>
+    </section>
+  );
+}

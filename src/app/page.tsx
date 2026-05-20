@@ -116,7 +116,7 @@ export default function Home() {
                 Angela is wearing the Araz Jacket in Darkest Navy, Rond T-Shirt
                 in Black Grape, Hera Pant in Cocoa and the Moon Shoes in Black.
               </p>
-              <Link href="#selected-products">Shop Now</Link>
+              <Link href="/shop/">Shop Now</Link>
             </div>
           </div>
         </section>
