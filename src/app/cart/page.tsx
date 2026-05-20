@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { CartClient } from "@/components/cart-client";
 import { SiteHeader } from "@/components/site-header";
 import styles from "./page.module.css";
 
@@ -15,14 +15,7 @@ export default function CartPage() {
   return (
     <main className={styles.page}>
       <SiteHeader variant="light" />
-      <section className={styles.panel} aria-labelledby="cart-title">
-        <div className={styles.headingRow}>
-          <h1 id="cart-title">Cart</h1>
-          <span>0 Items</span>
-        </div>
-        <p>Your cart is empty.</p>
-        <Link href="/shop/">Continue Shopping</Link>
-      </section>
+      <CartClient />
     </main>
   );
 }

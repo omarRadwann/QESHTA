@@ -1,6 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   formatPrice,
@@ -12,6 +13,7 @@ import {
   type ProductVariant,
 } from "@/data/products";
 import { assetPath } from "@/lib/assets";
+import { addCartLine } from "@/lib/cart";
 import styles from "./product-detail.module.css";
 
 type ProductDetailProps = {
@@ -41,6 +43,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const [selectedSize, setSelectedSize] = useState<ProductSize>(productSizes[0]);
   const [activeTab, setActiveTab] = useState<ProductDetailTab["id"]>(tabs[0].id);
   const [cartState, setCartState] = useState<"idle" | "added">("idle");
+  const [lastAddedLabel, setLastAddedLabel] = useState("");
 
   const activeTabContent = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
   const hasVariantChoices = Boolean(product.variants && product.variants.length > 1);
@@ -49,8 +52,18 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const hasEditorialMedia = Boolean(selectedVariant.detailHeroImage ?? product.detailHeroImage);
 
   function addToCart() {
+    addCartLine({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      image: selectedVariant.image,
+      variantId: selectedVariant.id,
+      variantLabel: selectedVariant.label,
+      size: selectedSize,
+    });
+    setLastAddedLabel(`${selectedVariant.label} / ${selectedSize}`);
     setCartState("added");
-    window.setTimeout(() => setCartState("idle"), 1300);
+    window.setTimeout(() => setCartState("idle"), 1800);
   }
 
   return (
@@ -69,6 +82,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
       </div>
 
       <div className={styles.purchasePanel}>
+        <Link className={styles.backLink} href="/shop/">
+          Back to Shop
+        </Link>
+
         <div className={styles.metaRow}>
           <div>
             <h1 id="product-title">{product.name}</h1>
@@ -127,18 +144,20 @@ export function ProductDetail({ product }: ProductDetailProps) {
               </button>
             ))}
           </div>
-          <button className={styles.fitButton} type="button">
+          <button
+            className={styles.fitButton}
+            type="button"
+            onClick={() => setActiveTab("size-fit")}
+          >
             Find my fit
           </button>
         </div>
 
         <button className={styles.cartButton} type="button" onClick={addToCart}>
-          {cartState === "added" ? "Added" : "Add to Cart"}
+          {cartState === "added" ? "Added to Cart" : "Add to Cart"}
         </button>
-        <p className={styles.srOnly} aria-live="polite">
-          {cartState === "added"
-            ? `${product.name} in ${selectedVariant.label}, size ${selectedSize}, added to cart.`
-            : ""}
+        <p className={styles.cartFeedback} aria-live="polite">
+          {cartState === "added" ? `${lastAddedLabel} added. Cart updated.` : "\u00a0"}
         </p>
 
         <div className={styles.tabs} role="tablist" aria-label={`${product.name} details`}>

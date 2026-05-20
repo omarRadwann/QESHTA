@@ -1,5 +1,9 @@
+"use client";
+
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { CART_CHANGE_EVENT, getCartCount, readCart } from "@/lib/cart";
 import { assetPath } from "@/lib/assets";
 import styles from "./site-header.module.css";
 
@@ -11,10 +15,10 @@ const primaryNav = [
 ];
 
 const utilityNav = [
-  { label: "ENG", href: "/" },
-  { label: "Search", href: "/shop#shop-search" },
-  { label: "Account", href: "/account/" },
-  { label: "Cart (0)", href: "/cart/" },
+  { id: "language", label: "ENG", href: "/" },
+  { id: "search", label: "Search", href: "/shop#shop-search" },
+  { id: "account", label: "Account", href: "/account/" },
+  { id: "cart", label: "Cart", href: "/cart/" },
 ];
 
 type SiteHeaderProps = {
@@ -22,6 +26,23 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    function syncCartCount() {
+      setCartCount(getCartCount(readCart()));
+    }
+
+    syncCartCount();
+    window.addEventListener(CART_CHANGE_EVENT, syncCartCount);
+    window.addEventListener("storage", syncCartCount);
+
+    return () => {
+      window.removeEventListener(CART_CHANGE_EVENT, syncCartCount);
+      window.removeEventListener("storage", syncCartCount);
+    };
+  }, []);
+
   return (
     <header
       className={`${styles.header} ${variant === "light" ? styles.light : ""}`}
@@ -46,8 +67,8 @@ export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
 
       <nav className={styles.navGroupRight} aria-label="Store navigation">
         {utilityNav.map((item) => (
-          <Link key={item.label} href={item.href}>
-            {item.label}
+          <Link key={item.id} href={item.href}>
+            {item.id === "cart" ? `${item.label} (${cartCount})` : item.label}
           </Link>
         ))}
       </nav>
