@@ -44,6 +44,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
   const activeTabContent = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
   const hasVariantChoices = Boolean(product.variants && product.variants.length > 1);
+  const mediaImage = selectedVariant.detailHeroImage ?? product.detailHeroImage ?? product.image;
+  const mediaAlt = selectedVariant.detailHeroAlt ?? product.detailHeroAlt ?? product.alt;
+  const hasEditorialMedia = Boolean(selectedVariant.detailHeroImage ?? product.detailHeroImage);
 
   function addToCart() {
     setCartState("added");
@@ -54,8 +57,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
     <section className={styles.detail} aria-labelledby="product-title">
       <div className={styles.mediaPanel}>
         <img
-          src={assetPath(product.detailHeroImage ?? product.image)}
-          alt={product.detailHeroAlt ?? product.alt}
+          key={mediaImage}
+          className={hasEditorialMedia ? styles.editorialImage : styles.productImage}
+          src={assetPath(mediaImage)}
+          alt={mediaAlt}
           width={1024}
           height={1536}
           decoding="async"

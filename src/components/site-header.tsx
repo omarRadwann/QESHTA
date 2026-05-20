@@ -13,8 +13,8 @@ const primaryNav = [
 const utilityNav = [
   { label: "ENG", href: "/" },
   { label: "Search", href: "/shop#shop-search" },
-  { label: "Account", href: "#account" },
-  { label: "Cart (0)", href: "#cart" },
+  { label: "Account", href: "/account/" },
+  { label: "Cart (0)", href: "/cart/" },
 ];
 
 type SiteHeaderProps = {

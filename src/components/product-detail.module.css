@@ -2,35 +2,55 @@
   background: #ffffff;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  min-height: 690px;
+  min-height: calc(100vh - 96px);
 }
 
 .mediaPanel {
   background: #f2f2f1;
-  min-height: 690px;
+  min-height: calc(100vh - 96px);
   overflow: hidden;
+  position: relative;
 }
 
 .mediaPanel img {
+  animation: productImageIn 260ms ease both;
   height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
+  inset: 0;
+  position: absolute;
   width: 100%;
 }
 
+.editorialImage {
+  object-fit: cover;
+  object-position: center;
+}
+
+.productImage {
+  background: #f5f3f0;
+  object-fit: contain;
+  object-position: center;
+  padding: clamp(34px, 6vw, 110px);
+}
+
 .purchasePanel {
+  align-items: center;
   background: #ffffff;
   display: flex;
   flex-direction: column;
-  min-height: 690px;
-  padding: 62px 34px 32px;
+  min-height: calc(100vh - 96px);
+  padding: clamp(22px, 4vh, 48px) clamp(24px, 4vw, 52px) 24px;
+}
+
+.purchasePanel > * {
+  max-width: 590px;
+  width: 100%;
 }
 
 .metaRow {
   align-items: flex-start;
   display: flex;
   justify-content: space-between;
-  min-height: 66px;
+  min-height: 56px;
 }
 
 .metaRow h1,
@@ -55,10 +75,11 @@
 .displayImageFrame {
   align-items: center;
   display: flex;
-  flex: 0 0 230px;
+  flex: 0 0 clamp(170px, 26vh, 230px);
+  height: clamp(170px, 26vh, 230px);
   justify-content: center;
-  margin: 4px auto 22px;
-  width: min(300px, 76%);
+  margin: 2px auto 18px;
+  width: min(260px, 66%);
 }
 
 .displayImageFrame img {
@@ -72,7 +93,7 @@
   display: flex;
   gap: 10px;
   justify-content: center;
-  margin: 0 auto 30px;
+  margin: 0 auto 22px;
 }
 
 .variantList button {
@@ -141,8 +162,8 @@
   cursor: pointer;
   font-size: 0.74rem;
   font-weight: 500;
-  height: 40px;
-  margin-bottom: 24px;
+  height: 36px;
+  margin-bottom: 20px;
   transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
   width: 100%;
 }
@@ -150,7 +171,7 @@
 .tabs {
   display: flex;
   gap: 34px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .tabs button {
@@ -170,7 +191,7 @@
   line-height: 1.45;
   margin: 0;
   max-width: 520px;
-  min-height: 68px;
+  min-height: 48px;
 }
 
 .footerLine {
@@ -221,6 +242,7 @@
 @media (max-width: 900px) {
   .detail {
     grid-template-columns: 1fr;
+    min-height: auto;
   }
 
   .mediaPanel,
@@ -232,8 +254,16 @@
     aspect-ratio: 4 / 5;
   }
 
+  .editorialImage {
+    object-fit: contain;
+  }
+
   .purchasePanel {
     padding: 34px 20px 28px;
+  }
+
+  .productImage {
+    padding: 32px;
   }
 }
 

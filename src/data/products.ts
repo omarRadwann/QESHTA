@@ -35,6 +35,8 @@ export type ProductVariant = {
   label: string;
   color: string;
   image: string;
+  detailHeroImage?: string;
+  detailHeroAlt?: string;
   thumbnail?: string;
 };
 
@@ -228,24 +230,36 @@ export const shopProducts: Product[] = [
         label: "Burgundy",
         color: "#4b1719",
         image: "/images/product-skirt-burgundy.jpg",
+        detailHeroImage: "/images/product-detail-skirt-chair.jpg",
+        detailHeroAlt:
+          "Burgundy suede leather skirt draped over a black tubular chair in a clean studio",
       },
       {
         id: "caramel",
         label: "Caramel",
         color: "#a86735",
         image: "/images/product-skirt-caramel.jpg",
+        detailHeroImage: "/images/product-detail-skirt-chair-caramel.jpg",
+        detailHeroAlt:
+          "Caramel suede leather skirt draped over a black tubular chair in a clean studio",
       },
       {
         id: "black",
         label: "Black",
         color: "#111111",
         image: "/images/product-skirt-black.jpg",
+        detailHeroImage: "/images/product-detail-skirt-chair-black.jpg",
+        detailHeroAlt:
+          "Black suede leather skirt draped over a black tubular chair in a clean studio",
       },
       {
         id: "navy",
         label: "Navy",
         color: "#171b3d",
         image: "/images/product-skirt-navy.jpg",
+        detailHeroImage: "/images/product-detail-skirt-chair-navy.jpg",
+        detailHeroAlt:
+          "Navy suede leather skirt draped over a black tubular chair in a clean studio",
       },
     ],
   },

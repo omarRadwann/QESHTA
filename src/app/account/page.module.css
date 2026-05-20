@@ -1,0 +1,59 @@
+.page {
+  background: #ffffff;
+  min-height: 100vh;
+}
+
+.panel {
+  display: grid;
+  gap: 22px;
+  margin: 0 auto;
+  max-width: 420px;
+  padding: clamp(80px, 14vh, 150px) 24px;
+}
+
+.panel h1 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.form {
+  display: grid;
+  gap: 10px;
+}
+
+.form label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.form input {
+  background: #ffffff;
+  border: 1px solid #050505;
+  border-radius: 0;
+  color: #050505;
+  min-height: 38px;
+  padding: 0 10px;
+}
+
+.form button,
+.panel a {
+  align-items: center;
+  background: #050505;
+  border: 1px solid #050505;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 0.76rem;
+  justify-content: center;
+  min-height: 38px;
+  text-decoration: none;
+}
+
+.panel a {
+  background: #ffffff;
+  color: #050505;
+}
