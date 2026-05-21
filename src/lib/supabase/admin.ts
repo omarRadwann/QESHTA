@@ -2,6 +2,7 @@ import type { Session, SupabaseClient } from "@supabase/supabase-js";
 import type {
   AccountRole,
   CatalogProduct,
+  CatalogProductInsert,
   CatalogProductStatus,
   CatalogProductUpdate,
   CustomerProfile,
@@ -110,11 +111,25 @@ export async function updateCatalogProduct(
   patch: Pick<
     CatalogProductUpdate,
     | "allow_backorder"
+    | "alt"
+    | "category"
+    | "collection"
+    | "color"
+    | "description"
+    | "detail_hero_alt"
+    | "detail_hero_image"
+    | "detail_tabs"
     | "featured"
+    | "image"
     | "inventory_quantity"
+    | "is_new"
     | "low_stock_threshold"
+    | "material"
+    | "name"
     | "price"
     | "status"
+    | "tags"
+    | "variants"
   >,
 ) {
   const { error } = await supabase
@@ -123,6 +138,27 @@ export async function updateCatalogProduct(
       ...patch,
       updated_at: new Date().toISOString(),
     })
+    .eq("product_id", productId);
+
+  if (error) throw error;
+}
+
+export async function createCatalogProduct(
+  supabase: SupabaseClient<Database>,
+  product: CatalogProductInsert,
+) {
+  const { error } = await supabase.from("catalog_products").insert(product);
+
+  if (error) throw error;
+}
+
+export async function deleteCatalogProduct(
+  supabase: SupabaseClient<Database>,
+  productId: string,
+) {
+  const { error } = await supabase
+    .from("catalog_products")
+    .delete()
     .eq("product_id", productId);
 
   if (error) throw error;

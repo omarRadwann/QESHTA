@@ -1,0 +1,13 @@
+.page {
+  background: #ffffff;
+  display: block;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 0;
+}
+
+.surface {
+  background: #ffffff;
+  min-height: 100vh;
+  width: 100%;
+}

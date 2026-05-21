@@ -60,6 +60,7 @@ export type Product = {
   detailTabs?: ProductDetailTab[];
   fitNote?: string;
   variants?: ProductVariant[];
+  catalogOnly?: boolean;
 };
 
 export const shopProducts: Product[] = [
@@ -429,6 +430,10 @@ export function formatPrice(price: number) {
 }
 
 export function getProductUrl(product: Product) {
+  if (product.catalogOnly) {
+    return `/shop/product/?id=${encodeURIComponent(product.id)}`;
+  }
+
   return `/shop/${product.id}/`;
 }
 

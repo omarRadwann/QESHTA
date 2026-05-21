@@ -94,45 +94,78 @@ export type Database = {
       catalog_products: {
         Row: {
           allow_backorder: boolean
+          alt: string | null
           category: string
+          collection: string
+          color: string | null
           created_at: string
+          description: string | null
+          detail_hero_alt: string | null
+          detail_hero_image: string | null
+          detail_tabs: Json | null
           featured: boolean
           image: string
           inventory_quantity: number
+          is_new: boolean
           low_stock_threshold: number
+          material: string | null
           name: string
           price: number
           product_id: string
           status: string
+          tags: string[]
           updated_at: string
+          variants: Json | null
         }
         Insert: {
           allow_backorder?: boolean
+          alt?: string | null
           category: string
+          collection?: string
+          color?: string | null
           created_at?: string
+          description?: string | null
+          detail_hero_alt?: string | null
+          detail_hero_image?: string | null
+          detail_tabs?: Json | null
           featured?: boolean
           image: string
           inventory_quantity?: number
+          is_new?: boolean
           low_stock_threshold?: number
+          material?: string | null
           name: string
           price: number
           product_id: string
           status?: string
+          tags?: string[]
           updated_at?: string
+          variants?: Json | null
         }
         Update: {
           allow_backorder?: boolean
+          alt?: string | null
           category?: string
+          collection?: string
+          color?: string | null
           created_at?: string
+          description?: string | null
+          detail_hero_alt?: string | null
+          detail_hero_image?: string | null
+          detail_tabs?: Json | null
           featured?: boolean
           image?: string
           inventory_quantity?: number
+          is_new?: boolean
           low_stock_threshold?: number
+          material?: string | null
           name?: string
           price?: number
           product_id?: string
           status?: string
+          tags?: string[]
           updated_at?: string
+          variants?: Json | null
         }
         Relationships: []
       }
@@ -434,6 +467,7 @@ export type RemoteCart = Tables<"carts">
 export type RemoteCartItem = Tables<"cart_items">
 export type RemoteCartItemInsert = TablesInsert<"cart_items">
 export type CatalogProduct = Tables<"catalog_products">
+export type CatalogProductInsert = TablesInsert<"catalog_products">
 export type CatalogProductUpdate = TablesUpdate<"catalog_products">
 export type Order = Tables<"orders">
 export type OrderUpdate = TablesUpdate<"orders">

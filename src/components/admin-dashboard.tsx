@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import {
+  Fragment,
   type Dispatch,
   type ReactNode,
   type SetStateAction,
@@ -10,10 +11,17 @@ import {
   useMemo,
   useState,
 } from "react";
-import { allProducts, formatPrice } from "@/data/products";
+import {
+  allProducts,
+  formatPrice,
+  getProductById,
+  shopCategories,
+} from "@/data/products";
 import { assetPath } from "@/lib/assets";
 import {
   catalogStatuses,
+  createCatalogProduct,
+  deleteCatalogProduct,
   fetchAdminSnapshot,
   getAdminAccess,
   orderStatuses,
@@ -39,9 +47,30 @@ import styles from "./admin-dashboard.module.css";
 type AdminView = "overview" | "orders" | "products" | "customers";
 type AccessState = "booting" | "unconfigured" | "signed-out" | "denied" | "ready";
 type ProductDraft = {
+  alt: string;
+  category: string;
+  collection: string;
+  color: string;
+  description: string;
+  detailHeroAlt: string;
+  detailHeroImage: string;
+  detailTabsJson: string;
+  image: string;
   inventoryQuantity: string;
+  isNew: boolean;
   lowStockThreshold: string;
+  material: string;
+  name: string;
   price: string;
+  tags: string;
+  variantsJson: string;
+};
+
+type NewProductDraft = ProductDraft & {
+  allowBackorder: boolean;
+  featured: boolean;
+  productId: string;
+  status: CatalogProductStatus;
 };
 
 const views: { label: string; value: AdminView }[] = [
@@ -52,6 +81,10 @@ const views: { label: string; value: AdminView }[] = [
 ];
 
 const storefrontProductIds = new Set(allProducts.map((product) => product.id));
+const productCategoryOptions = shopCategories.filter(
+  (category): category is Exclude<(typeof shopCategories)[number], "View All"> =>
+    category !== "View All",
+);
 
 export function AdminDashboard() {
   const supabaseReady = isSupabaseConfigured();
@@ -62,6 +95,9 @@ export function AdminDashboard() {
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [snapshot, setSnapshot] = useState<AdminSnapshot | null>(null);
   const [productDrafts, setProductDrafts] = useState<Record<string, ProductDraft>>({});
+  const [newProductDraft, setNewProductDraft] = useState<NewProductDraft>(
+    makeEmptyProductDraft,
+  );
   const [adminQuery, setAdminQuery] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState<"all" | OrderStatus>(
     "all",
@@ -301,28 +337,9 @@ export function AdminDashboard() {
     const draft = productDrafts[productId];
     if (!draft) return;
 
-    if (
-      draft.inventoryQuantity.trim() === "" ||
-      draft.lowStockThreshold.trim() === "" ||
-      draft.price.trim() === ""
-    ) {
-      setMessage("Price, stock, and threshold are required before saving.");
-      return;
-    }
-
-    const inventoryQuantity = Number(draft.inventoryQuantity);
-    const lowStockThreshold = Number(draft.lowStockThreshold);
-    const price = Number(draft.price);
-
-    if (
-      !Number.isInteger(inventoryQuantity) ||
-      inventoryQuantity < 0 ||
-      !Number.isInteger(lowStockThreshold) ||
-      lowStockThreshold < 0 ||
-      !Number.isFinite(price) ||
-      price < 0
-    ) {
-      setMessage("Price, stock, and threshold must be valid numbers greater than or equal to 0.");
+    const productPayload = buildProductPayloadFromDraft(draft);
+    if ("error" in productPayload) {
+      setMessage(productPayload.error || "Product validation failed.");
       return;
     }
 
@@ -331,14 +348,71 @@ export function AdminDashboard() {
 
     try {
       const supabase = getSupabaseBrowserClient();
-      await updateCatalogProduct(supabase, productId, {
-        inventory_quantity: inventoryQuantity,
-        low_stock_threshold: lowStockThreshold,
-        price,
-      });
+      await updateCatalogProduct(supabase, productId, productPayload.value);
       await refreshSnapshot("Product saved.");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Inventory update failed.");
+      setMessage(error instanceof Error ? error.message : "Product update failed.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleProductCreate() {
+    const productId = normalizeProductId(newProductDraft.productId);
+    if (!productId) {
+      setMessage("Product ID is required.");
+      return;
+    }
+
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(productId)) {
+      setMessage("Product ID must use lowercase letters, numbers, and hyphens.");
+      return;
+    }
+
+    if (snapshot?.catalogProducts.some((product) => product.product_id === productId)) {
+      setMessage("A product with this ID already exists.");
+      return;
+    }
+
+    const productPayload = buildProductPayloadFromDraft(newProductDraft);
+    if ("error" in productPayload) {
+      setMessage(productPayload.error || "Product validation failed.");
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await createCatalogProduct(supabase, {
+        ...productPayload.value,
+        allow_backorder: newProductDraft.allowBackorder,
+        featured: newProductDraft.featured,
+        product_id: productId,
+        status: newProductDraft.status,
+      });
+      setNewProductDraft(makeEmptyProductDraft());
+      await refreshSnapshot("Product created.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Product create failed.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleProductDelete(productId: string, name: string) {
+    if (!window.confirm(`Delete ${name} from the live catalog?`)) return;
+
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await deleteCatalogProduct(supabase, productId);
+      await refreshSnapshot("Product deleted from catalog.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Product delete failed.");
     } finally {
       setIsSaving(false);
     }
@@ -470,6 +544,7 @@ export function AdminDashboard() {
                 disabled={isSaving}
                 drafts={productDrafts}
                 onDraftChange={setProductDrafts}
+                onDelete={handleProductDelete}
                 onPatch={handleProductPatch}
                 onProductSave={handleProductSave}
                 products={snapshot.catalogProducts
@@ -551,10 +626,17 @@ export function AdminDashboard() {
               </select>
             }
           />
+          <ProductCreateForm
+            disabled={isSaving}
+            draft={newProductDraft}
+            onChange={setNewProductDraft}
+            onCreate={handleProductCreate}
+          />
           <ProductTable
             disabled={isSaving}
             drafts={productDrafts}
             onDraftChange={setProductDrafts}
+            onDelete={handleProductDelete}
             onPatch={handleProductPatch}
             onProductSave={handleProductSave}
             products={filteredProducts}
@@ -741,10 +823,227 @@ function OrderTable({
   );
 }
 
+function ProductCreateForm({
+  disabled,
+  draft,
+  onChange,
+  onCreate,
+}: {
+  disabled: boolean;
+  draft: NewProductDraft;
+  onChange: Dispatch<SetStateAction<NewProductDraft>>;
+  onCreate: () => void;
+}) {
+  return (
+    <section className={styles.productForm} aria-labelledby="new-product-title">
+      <div className={styles.productFormHeader}>
+        <div>
+          <h3 id="new-product-title">Add product</h3>
+          <p>Create a live catalog item without touching code.</p>
+        </div>
+        <button type="button" disabled={disabled} onClick={onCreate}>
+          Add Product
+        </button>
+      </div>
+
+      <div className={styles.productFormGrid}>
+        <ProductTextField
+          disabled={disabled}
+          label="Product ID"
+          value={draft.productId}
+          onChange={(value) =>
+            onChange((current) => ({ ...current, productId: normalizeProductId(value) }))
+          }
+        />
+        <ProductTextField
+          disabled={disabled}
+          label="Name"
+          value={draft.name}
+          onChange={(value) => onChange((current) => ({ ...current, name: value }))}
+        />
+        <label>
+          <span>Category</span>
+          <select
+            disabled={disabled}
+            value={draft.category}
+            onChange={(event) =>
+              onChange((current) => ({ ...current, category: event.target.value }))
+            }
+          >
+            {productCategoryOptions.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </label>
+        <ProductTextField
+          disabled={disabled}
+          label="Price"
+          type="number"
+          value={draft.price}
+          onChange={(value) => onChange((current) => ({ ...current, price: value }))}
+        />
+        <ProductTextField
+          disabled={disabled}
+          label="Main image"
+          value={draft.image}
+          onChange={(value) => onChange((current) => ({ ...current, image: value }))}
+        />
+        <ProductTextField
+          disabled={disabled}
+          label="Alt text"
+          value={draft.alt}
+          onChange={(value) => onChange((current) => ({ ...current, alt: value }))}
+        />
+        <ProductTextField
+          disabled={disabled}
+          label="Color"
+          value={draft.color}
+          onChange={(value) => onChange((current) => ({ ...current, color: value }))}
+        />
+        <ProductTextField
+          disabled={disabled}
+          label="Material"
+          value={draft.material}
+          onChange={(value) => onChange((current) => ({ ...current, material: value }))}
+        />
+        <ProductTextField
+          disabled={disabled}
+          label="Collection"
+          value={draft.collection}
+          onChange={(value) => onChange((current) => ({ ...current, collection: value }))}
+        />
+        <ProductTextField
+          disabled={disabled}
+          label="Stock"
+          type="number"
+          value={draft.inventoryQuantity}
+          onChange={(value) =>
+            onChange((current) => ({ ...current, inventoryQuantity: value }))
+          }
+        />
+        <ProductTextField
+          disabled={disabled}
+          label="Low stock"
+          type="number"
+          value={draft.lowStockThreshold}
+          onChange={(value) =>
+            onChange((current) => ({ ...current, lowStockThreshold: value }))
+          }
+        />
+        <label>
+          <span>Status</span>
+          <select
+            disabled={disabled}
+            value={draft.status}
+            onChange={(event) =>
+              onChange((current) => ({
+                ...current,
+                status: event.target.value as CatalogProductStatus,
+              }))
+            }
+          >
+            {catalogStatuses.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className={styles.productWideField}>
+          <span>Description</span>
+          <textarea
+            disabled={disabled}
+            value={draft.description}
+            onChange={(event) =>
+              onChange((current) => ({ ...current, description: event.target.value }))
+            }
+          />
+        </label>
+        <ProductTextField
+          disabled={disabled}
+          label="Tags"
+          value={draft.tags}
+          wrapperClassName={styles.productWideField}
+          onChange={(value) => onChange((current) => ({ ...current, tags: value }))}
+        />
+      </div>
+
+      <div className={styles.productFlags}>
+        <label>
+          <input
+            checked={draft.isNew}
+            disabled={disabled}
+            type="checkbox"
+            onChange={(event) =>
+              onChange((current) => ({ ...current, isNew: event.target.checked }))
+            }
+          />
+          New
+        </label>
+        <label>
+          <input
+            checked={draft.featured}
+            disabled={disabled}
+            type="checkbox"
+            onChange={(event) =>
+              onChange((current) => ({ ...current, featured: event.target.checked }))
+            }
+          />
+          Featured
+        </label>
+        <label>
+          <input
+            checked={draft.allowBackorder}
+            disabled={disabled}
+            type="checkbox"
+            onChange={(event) =>
+              onChange((current) => ({ ...current, allowBackorder: event.target.checked }))
+            }
+          />
+          Allow backorder
+        </label>
+      </div>
+    </section>
+  );
+}
+
+function ProductTextField({
+  disabled,
+  label,
+  onChange,
+  type = "text",
+  value,
+  wrapperClassName,
+}: {
+  disabled: boolean;
+  label: string;
+  onChange: (value: string) => void;
+  type?: "number" | "text";
+  value: string;
+  wrapperClassName?: string;
+}) {
+  return (
+    <label className={wrapperClassName}>
+      <span>{label}</span>
+      <input
+        disabled={disabled}
+        min={type === "number" ? 0 : undefined}
+        step={type === "number" ? "0.01" : undefined}
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
 function ProductTable({
   disabled,
   drafts,
   onDraftChange,
+  onDelete,
   onPatch,
   onProductSave,
   products,
@@ -752,6 +1051,7 @@ function ProductTable({
   disabled: boolean;
   drafts: Record<string, ProductDraft>;
   onDraftChange: Dispatch<SetStateAction<Record<string, ProductDraft>>>;
+  onDelete: (productId: string, name: string) => void;
   onPatch: (
     productId: string,
     patch: {
@@ -784,147 +1084,258 @@ function ProductTable({
         </thead>
         <tbody>
           {products.map((product) => {
-            const draft = drafts[product.product_id] ?? {
-              inventoryQuantity: String(product.inventory_quantity),
-              lowStockThreshold: String(product.low_stock_threshold),
-              price: String(Number(product.price)),
-            };
+            const draft = drafts[product.product_id] ?? makeProductDraft(product);
             const isLinked = storefrontProductIds.has(product.product_id);
+            const updateDraft = (patch: Partial<ProductDraft>) =>
+              onDraftChange((current) => ({
+                ...current,
+                [product.product_id]: {
+                  ...draft,
+                  ...patch,
+                },
+              }));
 
             return (
-              <tr key={product.product_id}>
-                <td>
-                  <div className={styles.productCell}>
-                    <img
-                      src={assetPath(product.image)}
-                      alt=""
-                      width={72}
-                      height={72}
-                      loading="lazy"
-                    />
-                    <div>
-                      <strong>{product.name}</strong>
-                      <span>
-                        {product.category} / ${formatPrice(Number(product.price))}
-                      </span>
+              <Fragment key={product.product_id}>
+                <tr>
+                  <td>
+                    <div className={styles.productCell}>
+                      <img
+                        src={assetPath(draft.image || product.image)}
+                        alt=""
+                        width={72}
+                        height={72}
+                        loading="lazy"
+                      />
+                      <div>
+                        <strong>{product.name}</strong>
+                        <span>
+                          {product.category} / ${formatPrice(Number(product.price))}
+                        </span>
+                        {!isLinked ? (
+                          <span className={styles.warning}>Dynamic product route</span>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td>
-                  <input
-                    aria-label={`Price for ${product.name}`}
-                    disabled={disabled}
-                    min={0}
-                    step="0.01"
-                    type="number"
-                    value={draft.price}
-                    onChange={(event) =>
-                      onDraftChange((current) => ({
-                        ...current,
-                        [product.product_id]: {
-                          ...draft,
-                          price: event.target.value,
-                        },
-                      }))
-                    }
-                  />
-                </td>
-                <td>
-                  <select
-                    aria-label={`Status for ${product.name}`}
-                    disabled={disabled}
-                    value={product.status}
-                    onChange={(event) =>
-                      onPatch(product.product_id, {
-                        status: event.target.value as CatalogProductStatus,
-                      })
-                    }
-                  >
-                    {catalogStatuses.map((status) => (
-                      <option key={status.value} value={status.value}>
-                        {status.label}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <input
-                    aria-label={`Inventory for ${product.name}`}
-                    disabled={disabled}
-                    min={0}
-                    type="number"
-                    value={draft.inventoryQuantity}
-                    onChange={(event) =>
-                      onDraftChange((current) => ({
-                        ...current,
-                        [product.product_id]: {
-                          ...draft,
-                          inventoryQuantity: event.target.value,
-                        },
-                      }))
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    aria-label={`Low stock threshold for ${product.name}`}
-                    disabled={disabled}
-                    min={0}
-                    type="number"
-                    value={draft.lowStockThreshold}
-                    onChange={(event) =>
-                      onDraftChange((current) => ({
-                        ...current,
-                        [product.product_id]: {
-                          ...draft,
-                          lowStockThreshold: event.target.value,
-                        },
-                      }))
-                    }
-                  />
-                </td>
-                <td>
-                  <label className={styles.switchLabel}>
+                  </td>
+                  <td>
                     <input
-                      checked={product.allow_backorder}
+                      aria-label={`Price for ${product.name}`}
                       disabled={disabled}
-                      type="checkbox"
+                      min={0}
+                      step="0.01"
+                      type="number"
+                      value={draft.price}
+                      onChange={(event) => updateDraft({ price: event.target.value })}
+                    />
+                  </td>
+                  <td>
+                    <select
+                      aria-label={`Status for ${product.name}`}
+                      disabled={disabled}
+                      value={product.status}
                       onChange={(event) =>
                         onPatch(product.product_id, {
-                          allow_backorder: event.target.checked,
+                          status: event.target.value as CatalogProductStatus,
                         })
                       }
-                    />
-                    Allow
-                  </label>
-                </td>
-                <td>
-                  <label className={styles.switchLabel}>
+                    >
+                      {catalogStatuses.map((status) => (
+                        <option key={status.value} value={status.value}>
+                          {status.label}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>
                     <input
-                      checked={product.featured}
+                      aria-label={`Inventory for ${product.name}`}
                       disabled={disabled}
-                      type="checkbox"
+                      min={0}
+                      type="number"
+                      value={draft.inventoryQuantity}
                       onChange={(event) =>
-                        onPatch(product.product_id, {
-                          featured: event.target.checked,
-                        })
+                        updateDraft({ inventoryQuantity: event.target.value })
                       }
                     />
-                    Feature
-                  </label>
-                </td>
-                <td>
-                  <button
-                    className={styles.tableButton}
-                    disabled={disabled}
-                    type="button"
-                    onClick={() => onProductSave(product.product_id)}
-                  >
-                    Save
-                  </button>
-                  {!isLinked ? <span className={styles.warning}>Missing route</span> : null}
-                </td>
-              </tr>
+                  </td>
+                  <td>
+                    <input
+                      aria-label={`Low stock threshold for ${product.name}`}
+                      disabled={disabled}
+                      min={0}
+                      type="number"
+                      value={draft.lowStockThreshold}
+                      onChange={(event) =>
+                        updateDraft({ lowStockThreshold: event.target.value })
+                      }
+                    />
+                  </td>
+                  <td>
+                    <label className={styles.switchLabel}>
+                      <input
+                        checked={product.allow_backorder}
+                        disabled={disabled}
+                        type="checkbox"
+                        onChange={(event) =>
+                          onPatch(product.product_id, {
+                            allow_backorder: event.target.checked,
+                          })
+                        }
+                      />
+                      Allow
+                    </label>
+                  </td>
+                  <td>
+                    <label className={styles.switchLabel}>
+                      <input
+                        checked={product.featured}
+                        disabled={disabled}
+                        type="checkbox"
+                        onChange={(event) =>
+                          onPatch(product.product_id, {
+                            featured: event.target.checked,
+                          })
+                        }
+                      />
+                      Feature
+                    </label>
+                  </td>
+                  <td>
+                    <div className={styles.actionStack}>
+                      <button
+                        className={styles.tableButton}
+                        disabled={disabled}
+                        type="button"
+                        onClick={() => onProductSave(product.product_id)}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className={styles.dangerButton}
+                        disabled={disabled}
+                        type="button"
+                        onClick={() => onDelete(product.product_id, product.name)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr className={styles.detailEditRow}>
+                  <td colSpan={8}>
+                    <div className={styles.productEditGrid}>
+                      <ProductTextField
+                        disabled={disabled}
+                        label="Name"
+                        value={draft.name}
+                        onChange={(value) => updateDraft({ name: value })}
+                      />
+                      <label>
+                        <span>Category</span>
+                        <select
+                          disabled={disabled}
+                          value={draft.category}
+                          onChange={(event) => updateDraft({ category: event.target.value })}
+                        >
+                          {productCategoryOptions.map((category) => (
+                            <option key={category} value={category}>
+                              {category}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <ProductTextField
+                        disabled={disabled}
+                        label="Main image"
+                        value={draft.image}
+                        onChange={(value) => updateDraft({ image: value })}
+                      />
+                      <ProductTextField
+                        disabled={disabled}
+                        label="Alt text"
+                        value={draft.alt}
+                        onChange={(value) => updateDraft({ alt: value })}
+                      />
+                      <ProductTextField
+                        disabled={disabled}
+                        label="Color"
+                        value={draft.color}
+                        onChange={(value) => updateDraft({ color: value })}
+                      />
+                      <ProductTextField
+                        disabled={disabled}
+                        label="Material"
+                        value={draft.material}
+                        onChange={(value) => updateDraft({ material: value })}
+                      />
+                      <ProductTextField
+                        disabled={disabled}
+                        label="Collection"
+                        value={draft.collection}
+                        onChange={(value) => updateDraft({ collection: value })}
+                      />
+                      <ProductTextField
+                        disabled={disabled}
+                        label="Tags"
+                        value={draft.tags}
+                        onChange={(value) => updateDraft({ tags: value })}
+                      />
+                      <ProductTextField
+                        disabled={disabled}
+                        label="Detail hero image"
+                        value={draft.detailHeroImage}
+                        onChange={(value) => updateDraft({ detailHeroImage: value })}
+                      />
+                      <ProductTextField
+                        disabled={disabled}
+                        label="Detail hero alt"
+                        value={draft.detailHeroAlt}
+                        onChange={(value) => updateDraft({ detailHeroAlt: value })}
+                      />
+                      <label className={styles.productWideField}>
+                        <span>Description</span>
+                        <textarea
+                          disabled={disabled}
+                          value={draft.description}
+                          onChange={(event) =>
+                            updateDraft({ description: event.target.value })
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Variants JSON</span>
+                        <textarea
+                          disabled={disabled}
+                          value={draft.variantsJson}
+                          onChange={(event) =>
+                            updateDraft({ variantsJson: event.target.value })
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Detail tabs JSON</span>
+                        <textarea
+                          disabled={disabled}
+                          value={draft.detailTabsJson}
+                          onChange={(event) =>
+                            updateDraft({ detailTabsJson: event.target.value })
+                          }
+                        />
+                      </label>
+                      <label className={styles.switchLabel}>
+                        <input
+                          checked={draft.isNew}
+                          disabled={disabled}
+                          type="checkbox"
+                          onChange={(event) => updateDraft({ isNew: event.target.checked })}
+                        />
+                        New product
+                      </label>
+                    </div>
+                  </td>
+                </tr>
+              </Fragment>
             );
           })}
         </tbody>
@@ -998,15 +1409,152 @@ function CustomerTable({
 
 function makeProductDrafts(products: AdminSnapshot["catalogProducts"]) {
   return Object.fromEntries(
-    products.map((product) => [
-      product.product_id,
-      {
-        inventoryQuantity: String(product.inventory_quantity),
-        lowStockThreshold: String(product.low_stock_threshold),
-        price: String(Number(product.price)),
-      },
-    ]),
+    products.map((product) => [product.product_id, makeProductDraft(product)]),
   );
+}
+
+function makeProductDraft(product: AdminSnapshot["catalogProducts"][number]): ProductDraft {
+  const fallback = getProductById(product.product_id);
+
+  return {
+    alt: product.alt ?? fallback?.alt ?? product.name,
+    category: product.category || fallback?.category || productCategoryOptions[0],
+    collection: product.collection || fallback?.collection || "Spring 26",
+    color: product.color ?? fallback?.color ?? "",
+    description: product.description ?? fallback?.description ?? "",
+    detailHeroAlt: product.detail_hero_alt ?? fallback?.detailHeroAlt ?? "",
+    detailHeroImage: product.detail_hero_image ?? fallback?.detailHeroImage ?? "",
+    detailTabsJson: stringifyJson(product.detail_tabs ?? fallback?.detailTabs),
+    image: product.image,
+    inventoryQuantity: String(product.inventory_quantity),
+    isNew: product.is_new || Boolean(fallback?.isNew),
+    lowStockThreshold: String(product.low_stock_threshold),
+    material: product.material ?? fallback?.material ?? "",
+    name: product.name,
+    price: String(Number(product.price)),
+    tags: product.tags.length > 0 ? product.tags.join(", ") : fallback?.tags.join(", ") ?? "",
+    variantsJson: stringifyJson(product.variants ?? fallback?.variants),
+  };
+}
+
+function makeEmptyProductDraft(): NewProductDraft {
+  return {
+    allowBackorder: false,
+    alt: "",
+    category: productCategoryOptions[0],
+    collection: "Spring 26",
+    color: "",
+    description: "",
+    detailHeroAlt: "",
+    detailHeroImage: "",
+    detailTabsJson: "",
+    featured: false,
+    image: "",
+    inventoryQuantity: "12",
+    isNew: true,
+    lowStockThreshold: "3",
+    material: "",
+    name: "",
+    price: "",
+    productId: "",
+    status: "draft",
+    tags: "",
+    variantsJson: "",
+  };
+}
+
+function buildProductPayloadFromDraft(draft: ProductDraft) {
+  const name = draft.name.trim();
+  const image = draft.image.trim();
+  const category = draft.category.trim();
+  const collection = draft.collection.trim() || "Spring 26";
+  const description = draft.description.trim();
+  const price = Number(draft.price);
+  const inventoryQuantity = Number(draft.inventoryQuantity);
+  const lowStockThreshold = Number(draft.lowStockThreshold);
+
+  if (!name || !category || !image || !description) {
+    return { error: "Name, category, image, and description are required." };
+  }
+
+  if (!productCategoryOptions.includes(category as (typeof productCategoryOptions)[number])) {
+    return { error: "Choose a valid product category." };
+  }
+
+  if (
+    !Number.isFinite(price) ||
+    price < 0 ||
+    !Number.isInteger(inventoryQuantity) ||
+    inventoryQuantity < 0 ||
+    !Number.isInteger(lowStockThreshold) ||
+    lowStockThreshold < 0
+  ) {
+    return { error: "Price, stock, and threshold must be valid numbers greater than or equal to 0." };
+  }
+
+  const variants = parseJsonDraft(draft.variantsJson, "Variants JSON");
+  if ("error" in variants) return variants;
+
+  const detailTabs = parseJsonDraft(draft.detailTabsJson, "Detail tabs JSON");
+  if ("error" in detailTabs) return detailTabs;
+
+  return {
+    value: {
+      alt: draft.alt.trim() || name,
+      category,
+      collection,
+      color: nullIfBlank(draft.color),
+      description,
+      detail_hero_alt: nullIfBlank(draft.detailHeroAlt),
+      detail_hero_image: nullIfBlank(draft.detailHeroImage),
+      detail_tabs: detailTabs.value,
+      image,
+      inventory_quantity: inventoryQuantity,
+      is_new: draft.isNew,
+      low_stock_threshold: lowStockThreshold,
+      material: nullIfBlank(draft.material),
+      name,
+      price,
+      tags: parseTags(draft.tags),
+      variants: variants.value,
+    },
+  };
+}
+
+function normalizeProductId(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function parseTags(value: string) {
+  return value
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
+
+function nullIfBlank(value: string) {
+  const nextValue = value.trim();
+  return nextValue.length > 0 ? nextValue : null;
+}
+
+function parseJsonDraft(value: string, label: string): { value: Json | null } | { error: string } {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) return { value: null };
+
+  try {
+    return { value: JSON.parse(trimmedValue) as Json };
+  } catch {
+    return { error: `${label} is not valid JSON.` };
+  }
+}
+
+function stringifyJson(value: unknown) {
+  if (!value || (Array.isArray(value) && value.length === 0)) return "";
+  return JSON.stringify(value, null, 2);
 }
 
 function formatDate(value: string) {

@@ -1,0 +1,46 @@
+.state {
+  align-content: center;
+  background: #ffffff;
+  color: #050505;
+  display: grid;
+  gap: 12px;
+  min-height: calc(100vh - 96px);
+  padding: clamp(44px, 8vw, 90px);
+}
+
+.state p {
+  color: #6d6862;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.state h1 {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.state span {
+  color: #5f5a55;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  max-width: 420px;
+}
+
+.state a {
+  color: #050505;
+  font-size: 0.72rem;
+  font-weight: 800;
+  justify-self: start;
+  line-height: 1;
+  margin-top: 12px;
+  padding-bottom: 3px;
+  text-decoration: none;
+  text-transform: uppercase;
+  border-bottom: 1px solid currentColor;
+}

@@ -12,8 +12,10 @@ import {
   type ShopSort,
 } from "@/data/products";
 import {
+  catalogProductToAvailability,
+  catalogProductToProduct,
   createAvailabilityMap,
-  fetchPublicCatalog,
+  fetchPublicCatalogProducts,
   type ProductAvailability,
 } from "@/lib/supabase/catalog";
 import {
@@ -46,20 +48,28 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
   const [maxPrice, setMaxPrice] = useState("all");
   const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
   const [availability, setAvailability] = useState<ProductAvailability[] | null>(null);
+  const [liveProducts, setLiveProducts] = useState<Product[] | null>(null);
   const [catalogMessage, setCatalogMessage] = useState("");
+  const catalogProducts = liveProducts ?? products;
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
     let isMounted = true;
     const supabase = getSupabaseBrowserClient();
+    const fallbackProducts = new Map(products.map((product) => [product.id, product]));
 
     async function syncCatalog() {
       try {
-        const productsAvailability = await fetchPublicCatalog(supabase);
+        const catalogProducts = await fetchPublicCatalogProducts(supabase);
 
         if (isMounted) {
-          setAvailability(productsAvailability);
+          setLiveProducts(
+            catalogProducts.map((product) =>
+              catalogProductToProduct(product, fallbackProducts.get(product.product_id)),
+            ),
+          );
+          setAvailability(catalogProducts.map(catalogProductToAvailability));
           setCatalogMessage("");
         }
       } catch {
@@ -74,15 +84,15 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [products]);
 
   const materialOptions = useMemo(
-    () => uniqueSorted(products.map((product) => product.material)),
-    [products],
+    () => uniqueSorted(catalogProducts.map((product) => product.material)),
+    [catalogProducts],
   );
   const colorOptions = useMemo(
-    () => uniqueSorted(products.map((product) => product.color)),
-    [products],
+    () => uniqueSorted(catalogProducts.map((product) => product.color)),
+    [catalogProducts],
   );
   const availabilityMap = useMemo(
     () => (availability ? createAvailabilityMap(availability) : null),
@@ -93,7 +103,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
     const normalizedQuery = query.trim().toLowerCase();
     const priceCeiling = maxPrice === "all" ? Infinity : Number(maxPrice);
 
-    const nextProducts = products.filter((product) => {
+    const nextProducts = catalogProducts.filter((product) => {
       const availabilityState = availabilityMap?.get(product.id);
       const displayPrice = availabilityState?.price ?? product.price;
       const catalogMatch = availabilityMap ? Boolean(availabilityState) : true;
@@ -138,7 +148,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
     colors,
     materials,
     maxPrice,
-    products,
+    catalogProducts,
     query,
     sort,
   ]);
