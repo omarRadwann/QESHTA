@@ -4,6 +4,10 @@
   min-width: 0;
 }
 
+.imageShell {
+  position: relative;
+}
+
 .imageFrame {
   aspect-ratio: 1;
   background: #f5f3f0;
@@ -35,6 +39,30 @@
   text-transform: uppercase;
   top: 10px;
   z-index: 1;
+}
+
+.wishlistButton {
+  background: rgb(255 255 255 / 88%);
+  border: 1px solid transparent;
+  color: #050505;
+  cursor: pointer;
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1;
+  min-height: 30px;
+  padding: 0 10px;
+  position: absolute;
+  right: 10px;
+  text-transform: uppercase;
+  top: 10px;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  z-index: 2;
+}
+
+.wishlistButton[aria-pressed="true"] {
+  background: #050505;
+  border-color: #050505;
+  color: #ffffff;
 }
 
 .card h3,
@@ -75,6 +103,11 @@
   .compactCard:hover .imageFrame img {
     filter: contrast(1.03);
     transform: scale(1.025);
+  }
+
+  .wishlistButton:hover {
+    border-color: #050505;
+    transform: translateY(-1px);
   }
 }
 

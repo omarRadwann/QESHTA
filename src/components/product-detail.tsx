@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { WishlistButton } from "@/components/wishlist-button";
 import {
   formatPrice,
   getProductTabs,
@@ -251,6 +252,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
         >
           {getCartButtonLabel(availabilityState, cartState)}
         </button>
+        <WishlistButton
+          productId={displayProduct.id}
+          className={styles.wishlistButton}
+          activeLabel="Saved to Wishlist"
+          inactiveLabel="Add to Wishlist"
+        />
         <p className={styles.cartFeedback} aria-live="polite">
           {getCartFeedback(availabilityState, cartState, lastAddedLabel)}
         </p>

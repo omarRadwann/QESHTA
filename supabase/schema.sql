@@ -34,6 +34,17 @@ create table if not exists public.cart_items (
   unique (cart_id, key)
 );
 
+create table if not exists public.wishlist_items (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  product_id text not null,
+  created_at timestamptz not null default now(),
+  unique (user_id, product_id)
+);
+
+create index if not exists wishlist_items_user_id_created_at_idx
+on public.wishlist_items (user_id, created_at desc);
+
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete restrict,
@@ -72,12 +83,14 @@ grant usage on schema public to authenticated;
 grant select, insert, update on public.profiles to authenticated;
 grant select, insert, update, delete on public.carts to authenticated;
 grant select, insert, update, delete on public.cart_items to authenticated;
+grant select, insert, delete on public.wishlist_items to authenticated;
 grant select, insert on public.orders to authenticated;
 grant select, insert on public.order_items to authenticated;
 
 alter table public.profiles enable row level security;
 alter table public.carts enable row level security;
 alter table public.cart_items enable row level security;
+alter table public.wishlist_items enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 
@@ -190,6 +203,27 @@ using (
       and carts.user_id = auth.uid()
   )
 );
+
+drop policy if exists "Customers can read their wishlist" on public.wishlist_items;
+create policy "Customers can read their wishlist"
+on public.wishlist_items
+for select
+to authenticated
+using (user_id = auth.uid());
+
+drop policy if exists "Customers can add wishlist items" on public.wishlist_items;
+create policy "Customers can add wishlist items"
+on public.wishlist_items
+for insert
+to authenticated
+with check (user_id = auth.uid());
+
+drop policy if exists "Customers can remove wishlist items" on public.wishlist_items;
+create policy "Customers can remove wishlist items"
+on public.wishlist_items
+for delete
+to authenticated
+using (user_id = auth.uid());
 
 drop policy if exists "Customers can read their orders" on public.orders;
 create policy "Customers can read their orders"

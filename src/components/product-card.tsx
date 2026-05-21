@@ -1,6 +1,9 @@
+"use client";
+
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { WishlistButton } from "@/components/wishlist-button";
 import { formatPrice, getProductUrl, type Product } from "@/data/products";
 import { assetPath } from "@/lib/assets";
 import styles from "./product-card.module.css";
@@ -32,19 +35,26 @@ export function ProductCard({
       className={compact ? styles.compactCard : styles.card}
       style={{ "--reveal-index": revealIndex } as CSSProperties}
     >
-      <Link className={styles.imageFrame} href={href} aria-label={`View ${product.name}`}>
-        <img
-          src={assetPath(product.image)}
-          alt={product.alt}
-          width={900}
-          height={900}
-          decoding="async"
-          fetchPriority={priority ? "high" : "auto"}
-          loading={priority ? "eager" : "lazy"}
+      <div className={styles.imageShell}>
+        <Link className={styles.imageFrame} href={href} aria-label={`View ${product.name}`}>
+          <img
+            src={assetPath(product.image)}
+            alt={product.alt}
+            width={900}
+            height={900}
+            decoding="async"
+            fetchPriority={priority ? "high" : "auto"}
+            loading={priority ? "eager" : "lazy"}
+          />
+          {isSoldOut ? <span className={styles.badge}>Sold out</span> : null}
+          {!isSoldOut && isLowStock ? <span className={styles.badge}>Low stock</span> : null}
+        </Link>
+        <WishlistButton
+          productId={product.id}
+          className={styles.wishlistButton}
+          inactiveLabel="Save"
         />
-        {isSoldOut ? <span className={styles.badge}>Sold out</span> : null}
-        {!isSoldOut && isLowStock ? <span className={styles.badge}>Low stock</span> : null}
-      </Link>
+      </div>
       <h3>{product.name}</h3>
       <p>{formatPrice(displayPrice ?? product.price)}</p>
     </article>

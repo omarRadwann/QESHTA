@@ -6,9 +6,20 @@ import { useEffect, useState } from "react";
 import { CART_CHANGE_EVENT, getCartCount, readCart } from "@/lib/cart";
 import { assetPath } from "@/lib/assets";
 import {
+  getWishlistCount,
+  mergeWishlistItems,
+  readWishlist,
+  WISHLIST_CHANGE_EVENT,
+  writeWishlist,
+} from "@/lib/wishlist";
+import {
   getSupabaseBrowserClient,
   isSupabaseConfigured,
 } from "@/lib/supabase/client";
+import {
+  loadRemoteWishlist,
+  saveRemoteWishlist,
+} from "@/lib/supabase/wishlist-sync";
 import styles from "./site-header.module.css";
 
 const primaryNav = [
@@ -22,6 +33,7 @@ const utilityNav = [
   { id: "language", label: "ENG", href: "/" },
   { id: "search", label: "Search", href: "/shop/#shop-search" },
   { id: "account", label: "Account", href: "/account/" },
+  { id: "wishlist", label: "Wishlist", href: "/wishlist/" },
   { id: "cart", label: "Cart", href: "/cart/" },
 ];
 
@@ -31,6 +43,7 @@ type SiteHeaderProps = {
 
 export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
   const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -45,6 +58,21 @@ export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
     return () => {
       window.removeEventListener(CART_CHANGE_EVENT, syncCartCount);
       window.removeEventListener("storage", syncCartCount);
+    };
+  }, []);
+
+  useEffect(() => {
+    function syncWishlistCount() {
+      setWishlistCount(getWishlistCount(readWishlist()));
+    }
+
+    syncWishlistCount();
+    window.addEventListener(WISHLIST_CHANGE_EVENT, syncWishlistCount);
+    window.addEventListener("storage", syncWishlistCount);
+
+    return () => {
+      window.removeEventListener(WISHLIST_CHANGE_EVENT, syncWishlistCount);
+      window.removeEventListener("storage", syncWishlistCount);
     };
   }, []);
 
@@ -91,11 +119,51 @@ export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    let isMounted = true;
+    const supabase = getSupabaseBrowserClient();
+
+    async function syncWishlist() {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error || !data.session) return;
+
+        const remoteWishlist = await loadRemoteWishlist(supabase, data.session.user.id);
+        const mergedWishlist = mergeWishlistItems(readWishlist(), remoteWishlist);
+
+        if (!isMounted) return;
+
+        writeWishlist(mergedWishlist);
+        await saveRemoteWishlist(supabase, data.session.user.id, mergedWishlist);
+      } catch {
+        if (isMounted) setWishlistCount(getWishlistCount(readWishlist()));
+      }
+    }
+
+    void syncWishlist();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      window.setTimeout(() => {
+        void syncWishlist();
+      }, 0);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const utilityItems = isAdmin
     ? [
         ...utilityNav.slice(0, 3),
         { id: "admin", label: "Admin", href: "/admin/" },
-        utilityNav[3],
+        ...utilityNav.slice(3),
       ]
     : utilityNav;
 
@@ -124,7 +192,11 @@ export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
       <nav className={styles.navGroupRight} aria-label="Store navigation">
         {utilityItems.map((item) => (
           <Link key={item.id} href={item.href}>
-            {item.id === "cart" ? `${item.label} (${cartCount})` : item.label}
+            {item.id === "cart"
+              ? `${item.label} (${cartCount})`
+              : item.id === "wishlist"
+                ? `${item.label} (${wishlistCount})`
+                : item.label}
           </Link>
         ))}
       </nav>

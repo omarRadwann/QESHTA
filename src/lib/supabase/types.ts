@@ -303,6 +303,27 @@ export type Database = {
         }
         Relationships: []
       }
+      wishlist_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -469,6 +490,8 @@ export type RemoteCartItemInsert = TablesInsert<"cart_items">
 export type CatalogProduct = Tables<"catalog_products">
 export type CatalogProductInsert = TablesInsert<"catalog_products">
 export type CatalogProductUpdate = TablesUpdate<"catalog_products">
+export type RemoteWishlistItem = Tables<"wishlist_items">
+export type WishlistItemInsert = TablesInsert<"wishlist_items">
 export type Order = Tables<"orders">
 export type OrderUpdate = TablesUpdate<"orders">
 export type OrderItem = Tables<"order_items">

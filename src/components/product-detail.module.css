@@ -182,6 +182,23 @@
   width: 100%;
 }
 
+.wishlistButton {
+  background: #ffffff;
+  border: 1px solid #050505;
+  color: #050505;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 500;
+  height: 34px;
+  margin-bottom: 10px;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+  width: 100%;
+}
+
+.wishlistButton[aria-pressed="true"] {
+  background: #f3f1ed;
+}
+
 .cartFeedback {
   color: #5f5a55;
   font-size: 0.72rem;
@@ -233,13 +250,19 @@
 
 @media (hover: hover) {
   .variantList button:hover,
-  .cartButton:hover {
+  .cartButton:hover,
+  .wishlistButton:hover {
     transform: translateY(-1px);
   }
 
   .cartButton:hover {
     background: #ffffff;
     color: #050505;
+  }
+
+  .wishlistButton:hover {
+    background: #050505;
+    color: #ffffff;
   }
 }
 

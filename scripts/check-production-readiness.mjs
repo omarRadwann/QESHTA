@@ -7,6 +7,7 @@ const checks = [];
 await checkEnvironment();
 await checkSupabaseAuth();
 await checkPublicCatalog();
+await checkWishlistProtection();
 
 const failedChecks = checks.filter((check) => check.status === "fail");
 
@@ -86,6 +87,53 @@ async function checkPublicCatalog() {
       "Public active catalog is readable",
       false,
       error instanceof Error ? error.message : "Unknown catalog error.",
+    );
+  }
+}
+
+async function checkWishlistProtection() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!url || !key) return;
+
+  try {
+    const response = await fetch(
+      `${url}/rest/v1/wishlist_items?select=product_id&limit=1`,
+      {
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+        },
+      },
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      addCheck(
+        "Wishlist data is protected from anonymous access",
+        true,
+        `${response.status} ${response.statusText}`,
+      );
+      return;
+    }
+
+    const rows = response.ok ? await response.json() : null;
+    const exposesNoRows = Array.isArray(rows) && rows.length === 0;
+
+    addCheck(
+      "Wishlist data is protected from anonymous access",
+      exposesNoRows,
+      exposesNoRows
+        ? "No wishlist rows are visible to anonymous visitors."
+        : response.ok
+          ? "Anonymous visitors can read wishlist rows."
+          : `${response.status} ${response.statusText}`,
+    );
+  } catch (error) {
+    addCheck(
+      "Wishlist data is protected from anonymous access",
+      false,
+      error instanceof Error ? error.message : "Unknown wishlist access error.",
     );
   }
 }
