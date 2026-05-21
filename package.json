@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "production:check": "node scripts/check-production-readiness.mjs",
     "supabase:create-admin-user": "node scripts/create-admin-user.mjs",
     "supabase:create-demo-user": "node scripts/create-demo-user.mjs"
   },

@@ -53,10 +53,9 @@ export function CheckoutClient() {
         setDetails((current) => ({
           ...current,
           customerEmail: data.session?.user.email ?? "",
-          customerName:
-            typeof data.session?.user.user_metadata.full_name === "string"
-              ? data.session.user.user_metadata.full_name
-              : current.customerName,
+          customerName: data.session
+            ? getSessionDisplayName(data.session) || current.customerName
+            : current.customerName,
         }));
       }
 
@@ -292,4 +291,13 @@ export function CheckoutClient() {
       </aside>
     </section>
   );
+}
+
+function getSessionDisplayName(activeSession: Session) {
+  const metadata = activeSession.user.user_metadata;
+
+  if (typeof metadata.full_name === "string") return metadata.full_name;
+  if (typeof metadata.name === "string") return metadata.name;
+
+  return "";
 }

@@ -77,6 +77,14 @@ npm run dev
 
 Set `NEXT_PUBLIC_SITE_URL` before production deployment so canonical URLs and schema use the final domain.
 
+Run the production readiness probe before handoff:
+
+```bash
+npm run production:check
+```
+
+It verifies required public environment variables, Supabase auth provider state, and public catalog visibility.
+
 ## Supabase
 
 Create a Supabase project, run `supabase/schema.sql` in the SQL editor, then set:
