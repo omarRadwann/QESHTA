@@ -147,6 +147,14 @@
   margin: -8px 0 14px;
 }
 
+.catalogMessage {
+  color: #6d6862;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  margin: -4px 0 16px;
+  text-align: right;
+}
+
 .grid {
   display: grid;
   gap: 8px;

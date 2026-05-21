@@ -10,6 +10,8 @@ type ProductCardProps = {
   priority?: boolean;
   compact?: boolean;
   href?: string;
+  isLowStock?: boolean;
+  isSoldOut?: boolean;
   revealIndex?: number;
 };
 
@@ -18,6 +20,8 @@ export function ProductCard({
   priority = false,
   compact = false,
   href = getProductUrl(product),
+  isLowStock = false,
+  isSoldOut = false,
   revealIndex = 0,
 }: ProductCardProps) {
   return (
@@ -36,6 +40,8 @@ export function ProductCard({
           fetchPriority={priority ? "high" : "auto"}
           loading={priority ? "eager" : "lazy"}
         />
+        {isSoldOut ? <span className={styles.badge}>Sold out</span> : null}
+        {!isSoldOut && isLowStock ? <span className={styles.badge}>Low stock</span> : null}
       </Link>
       <h3>{product.name}</h3>
       <p>{formatPrice(product.price)}</p>

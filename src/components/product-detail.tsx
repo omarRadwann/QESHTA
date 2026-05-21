@@ -14,6 +14,11 @@ import {
 } from "@/data/products";
 import { assetPath } from "@/lib/assets";
 import { addCartLine } from "@/lib/cart";
+import { fetchProductAvailability } from "@/lib/supabase/catalog";
+import {
+  getSupabaseBrowserClient,
+  isSupabaseConfigured,
+} from "@/lib/supabase/client";
 import styles from "./product-detail.module.css";
 
 type ProductDetailProps = {
@@ -44,6 +49,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const [activeTab, setActiveTab] = useState<ProductDetailTab["id"]>(tabs[0].id);
   const [cartState, setCartState] = useState<"idle" | "added">("idle");
   const [lastAddedLabel, setLastAddedLabel] = useState("");
+  const [availabilityState, setAvailabilityState] = useState<
+    "available" | "checking" | "sold-out" | "unavailable"
+  >(isSupabaseConfigured() ? "checking" : "available");
   const cartStateResetTimer = useRef<number | null>(null);
 
   const activeTabContent = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
@@ -51,6 +59,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const mediaImage = selectedVariant.detailHeroImage ?? product.detailHeroImage ?? product.image;
   const mediaAlt = selectedVariant.detailHeroAlt ?? product.detailHeroAlt ?? product.alt;
   const hasEditorialMedia = Boolean(selectedVariant.detailHeroImage ?? product.detailHeroImage);
+  const canAddToCart = availabilityState === "available";
 
   useEffect(() => {
     return () => {
@@ -60,7 +69,39 @@ export function ProductDetail({ product }: ProductDetailProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    let isMounted = true;
+    const supabase = getSupabaseBrowserClient();
+
+    async function syncAvailability() {
+      try {
+        const availability = await fetchProductAvailability(supabase, product.id);
+
+        if (!isMounted) return;
+
+        if (!availability) {
+          setAvailabilityState("unavailable");
+          return;
+        }
+
+        setAvailabilityState(availability.isAvailable ? "available" : "sold-out");
+      } catch {
+        if (isMounted) setAvailabilityState("available");
+      }
+    }
+
+    void syncAvailability();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [product.id]);
+
   function addToCart() {
+    if (!canAddToCart) return;
+
     if (cartStateResetTimer.current) {
       window.clearTimeout(cartStateResetTimer.current);
     }
@@ -169,11 +210,16 @@ export function ProductDetail({ product }: ProductDetailProps) {
           </button>
         </div>
 
-        <button className={styles.cartButton} type="button" onClick={addToCart}>
-          {cartState === "added" ? "Added to Cart" : "Add to Cart"}
+        <button
+          className={styles.cartButton}
+          type="button"
+          disabled={!canAddToCart}
+          onClick={addToCart}
+        >
+          {getCartButtonLabel(availabilityState, cartState)}
         </button>
         <p className={styles.cartFeedback} aria-live="polite">
-          {cartState === "added" ? `${lastAddedLabel} added. Cart updated.` : "\u00a0"}
+          {getCartFeedback(availabilityState, cartState, lastAddedLabel)}
         </p>
 
         <div className={styles.tabs} role="tablist" aria-label={`${product.name} details`}>
@@ -209,4 +255,26 @@ export function ProductDetail({ product }: ProductDetailProps) {
       </div>
     </section>
   );
+}
+
+function getCartButtonLabel(
+  availabilityState: "available" | "checking" | "sold-out" | "unavailable",
+  cartState: "idle" | "added",
+) {
+  if (availabilityState === "checking") return "Checking Availability";
+  if (availabilityState === "sold-out") return "Sold Out";
+  if (availabilityState === "unavailable") return "Unavailable";
+  return cartState === "added" ? "Added to Cart" : "Add to Cart";
+}
+
+function getCartFeedback(
+  availabilityState: "available" | "checking" | "sold-out" | "unavailable",
+  cartState: "idle" | "added",
+  lastAddedLabel: string,
+) {
+  if (cartState === "added") return `${lastAddedLabel} added. Cart updated.`;
+  if (availabilityState === "checking") return "Confirming live stock.";
+  if (availabilityState === "sold-out") return "This piece is currently out of stock.";
+  if (availabilityState === "unavailable") return "This piece is not available online.";
+  return "\u00a0";
 }

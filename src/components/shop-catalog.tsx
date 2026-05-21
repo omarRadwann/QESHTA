@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/product-card";
 import { ShopEditorialBanner } from "@/components/shop-editorial-banner";
 import {
@@ -11,6 +11,15 @@ import {
   type ShopCategory,
   type ShopSort,
 } from "@/data/products";
+import {
+  createAvailabilityMap,
+  fetchPublicCatalog,
+  type ProductAvailability,
+} from "@/lib/supabase/catalog";
+import {
+  getSupabaseBrowserClient,
+  isSupabaseConfigured,
+} from "@/lib/supabase/client";
 import styles from "./shop-catalog.module.css";
 
 type ShopCatalogProps = {
@@ -36,6 +45,36 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
   const [colors, setColors] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState("all");
   const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
+  const [availability, setAvailability] = useState<ProductAvailability[] | null>(null);
+  const [catalogMessage, setCatalogMessage] = useState("");
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    let isMounted = true;
+    const supabase = getSupabaseBrowserClient();
+
+    async function syncCatalog() {
+      try {
+        const productsAvailability = await fetchPublicCatalog(supabase);
+
+        if (isMounted) {
+          setAvailability(productsAvailability);
+          setCatalogMessage("");
+        }
+      } catch {
+        if (isMounted) {
+          setCatalogMessage("Live stock is updating. Product checkout will confirm availability.");
+        }
+      }
+    }
+
+    void syncCatalog();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const materialOptions = useMemo(
     () => uniqueSorted(products.map((product) => product.material)),
@@ -45,12 +84,18 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
     () => uniqueSorted(products.map((product) => product.color)),
     [products],
   );
+  const availabilityMap = useMemo(
+    () => (availability ? createAvailabilityMap(availability) : null),
+    [availability],
+  );
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     const priceCeiling = maxPrice === "all" ? Infinity : Number(maxPrice);
 
     const nextProducts = products.filter((product) => {
+      const availabilityState = availabilityMap?.get(product.id);
+      const catalogMatch = availabilityMap ? Boolean(availabilityState) : true;
       const categoryMatch =
         activeCategory === "View All" || product.category === activeCategory;
       const queryMatch =
@@ -68,6 +113,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
           .includes(normalizedQuery);
 
       return (
+        catalogMatch &&
         categoryMatch &&
         queryMatch &&
         matchesSelected(product.material, materials) &&
@@ -82,7 +128,16 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
       if (sort === "newest") return Number(Boolean(b.isNew)) - Number(Boolean(a.isNew));
       return 0;
     });
-  }, [activeCategory, colors, materials, maxPrice, products, query, sort]);
+  }, [
+    activeCategory,
+    availabilityMap,
+    colors,
+    materials,
+    maxPrice,
+    products,
+    query,
+    sort,
+  ]);
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasActiveFilters =
@@ -245,28 +300,42 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
         {filteredProducts.length} product{filteredProducts.length === 1 ? "" : "s"}
       </div>
 
+      {catalogMessage ? <p className={styles.catalogMessage}>{catalogMessage}</p> : null}
+
       {filteredProducts.length > 0 ? (
         <div className={styles.grid}>
-          {visibleProducts.slice(0, 8).map((product, index) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              href={getProductUrl(product)}
-              priority={index < 4}
-              revealIndex={index}
-            />
-          ))}
+          {visibleProducts.slice(0, 8).map((product, index) => {
+            const productAvailability = availabilityMap?.get(product.id);
+
+            return (
+              <ProductCard
+                key={product.id}
+                product={product}
+                href={getProductUrl(product)}
+                isLowStock={productAvailability?.isLowStock}
+                isSoldOut={productAvailability ? !productAvailability.isAvailable : false}
+                priority={index < 4}
+                revealIndex={index}
+              />
+            );
+          })}
 
           {!hasActiveFilters && filteredProducts.length > 8 ? <ShopEditorialBanner /> : null}
 
-          {visibleProducts.slice(8).map((product, index) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              href={getProductUrl(product)}
-              revealIndex={index + 8}
-            />
-          ))}
+          {visibleProducts.slice(8).map((product, index) => {
+            const productAvailability = availabilityMap?.get(product.id);
+
+            return (
+              <ProductCard
+                key={product.id}
+                product={product}
+                href={getProductUrl(product)}
+                isLowStock={productAvailability?.isLowStock}
+                isSoldOut={productAvailability ? !productAvailability.isAvailable : false}
+                revealIndex={index + 8}
+              />
+            );
+          })}
         </div>
       ) : (
         <div className={styles.emptyState}>

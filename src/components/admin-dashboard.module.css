@@ -50,14 +50,26 @@
 }
 
 .adminHeader a,
+.headerActions button,
 .stateAction a {
+  background: transparent;
+  border: 0;
   border-bottom: 1px solid currentColor;
+  color: #050505;
+  cursor: pointer;
   font-size: 0.72rem;
   font-weight: 800;
+  font-family: inherit;
   line-height: 1;
   padding-bottom: 3px;
   text-decoration: none;
   text-transform: uppercase;
+}
+
+.headerActions {
+  align-items: center;
+  display: flex;
+  gap: 18px;
 }
 
 .viewTabs {
@@ -140,6 +152,52 @@
 .dashboard > section {
   display: grid;
   gap: 16px;
+}
+
+.sectionHeading {
+  align-items: baseline;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.sectionHeading span {
+  color: #6d6862;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.adminControls {
+  align-items: end;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(220px, 360px) minmax(170px, 220px);
+}
+
+.adminControls label {
+  display: grid;
+  gap: 6px;
+}
+
+.adminControls label span {
+  color: #6d6862;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.adminControls input,
+.adminControls select {
+  background: #ffffff;
+  border: 1px solid #bdb7b0;
+  border-radius: 0;
+  color: #050505;
+  font-family: inherit;
+  min-height: 34px;
+  padding: 0 9px;
 }
 
 .tableWrap {
@@ -225,6 +283,7 @@
 }
 
 .tableButton:disabled,
+.headerActions button:disabled,
 .viewTabs button:disabled,
 .table select:disabled,
 .table input:disabled {
@@ -258,6 +317,7 @@
   }
 
   .adminHeader,
+  .adminControls,
   .splitSection {
     display: grid;
     grid-template-columns: 1fr;

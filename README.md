@@ -94,6 +94,7 @@ The schema creates:
 - Saved carts and cart line items
 - Customer orders and order line items
 - RLS policies so customers only access their own records and admins can manage back-office data
+- Public read access only for active catalog product availability, so the static storefront can hide inactive products and block sold-out items
 - Atomic order creation that validates active products, uses server-side prices, and decrements stock
 
 To create a confirmed customer account from your local machine:

@@ -61,6 +61,16 @@ export function AdminDashboard() {
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [snapshot, setSnapshot] = useState<AdminSnapshot | null>(null);
   const [stockDrafts, setStockDrafts] = useState<Record<string, StockDraft>>({});
+  const [adminQuery, setAdminQuery] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState<"all" | OrderStatus>(
+    "all",
+  );
+  const [productStatusFilter, setProductStatusFilter] = useState<
+    "all" | CatalogProductStatus
+  >("all");
+  const [customerRoleFilter, setCustomerRoleFilter] = useState<"all" | AccountRole>(
+    "all",
+  );
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -156,6 +166,78 @@ export function AdminDashboard() {
       revenue,
     };
   }, [snapshot]);
+
+  const normalizedAdminQuery = adminQuery.trim().toLowerCase();
+  const filteredOrders = useMemo(() => {
+    const orders = snapshot?.orders ?? [];
+
+    return orders.filter((order) => {
+      const items = orderItemsByOrder.get(order.id) ?? [];
+      const statusMatch =
+        orderStatusFilter === "all" || order.status === orderStatusFilter;
+      const queryMatch =
+        normalizedAdminQuery.length === 0 ||
+        [
+          order.order_number,
+          order.customer_name,
+          order.customer_email,
+          order.phone ?? "",
+          order.status,
+          formatAddress(order.shipping_address),
+          summarizeItems(items),
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedAdminQuery);
+
+      return statusMatch && queryMatch;
+    });
+  }, [normalizedAdminQuery, orderItemsByOrder, orderStatusFilter, snapshot]);
+
+  const filteredProducts = useMemo(() => {
+    const products = snapshot?.catalogProducts ?? [];
+
+    return products.filter((product) => {
+      const statusMatch =
+        productStatusFilter === "all" || product.status === productStatusFilter;
+      const queryMatch =
+        normalizedAdminQuery.length === 0 ||
+        [
+          product.product_id,
+          product.name,
+          product.category,
+          product.status,
+          product.inventory_quantity,
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedAdminQuery);
+
+      return statusMatch && queryMatch;
+    });
+  }, [normalizedAdminQuery, productStatusFilter, snapshot]);
+
+  const filteredCustomers = useMemo(() => {
+    const profiles = snapshot?.profiles ?? [];
+
+    return profiles.filter((customer) => {
+      const roleMatch =
+        customerRoleFilter === "all" || customer.role === customerRoleFilter;
+      const queryMatch =
+        normalizedAdminQuery.length === 0 ||
+        [
+          customer.email,
+          customer.full_name ?? "",
+          customer.phone ?? "",
+          customer.role,
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedAdminQuery);
+
+      return roleMatch && queryMatch;
+    });
+  }, [customerRoleFilter, normalizedAdminQuery, snapshot]);
 
   async function refreshSnapshot(successMessage?: string) {
     const supabase = getSupabaseBrowserClient();
@@ -263,6 +345,19 @@ export function AdminDashboard() {
     }
   }
 
+  async function handleManualRefresh() {
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      await refreshSnapshot("Dashboard refreshed.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Refresh failed.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   if (accessState === "unconfigured") {
     return (
       <AdminState
@@ -308,7 +403,12 @@ export function AdminDashboard() {
           <h1 id="admin-title">QESHTA Admin</h1>
           <span>{profile?.email}</span>
         </div>
-        <Link href="/shop/">View storefront</Link>
+        <div className={styles.headerActions}>
+          <button type="button" disabled={isSaving} onClick={handleManualRefresh}>
+            Refresh
+          </button>
+          <Link href="/shop/">View storefront</Link>
+        </div>
       </div>
 
       <nav className={styles.viewTabs} aria-label="Admin sections">
@@ -372,42 +472,160 @@ export function AdminDashboard() {
 
       {activeView === "orders" ? (
         <section aria-labelledby="orders-title">
-          <h2 id="orders-title">Orders</h2>
+          <SectionHeading
+            title="Orders"
+            id="orders-title"
+            meta={`${filteredOrders.length} shown`}
+          />
+          <AdminControls
+            query={adminQuery}
+            queryLabel="Search orders"
+            onQueryChange={setAdminQuery}
+            filter={
+              <select
+                aria-label="Filter orders by status"
+                value={orderStatusFilter}
+                onChange={(event) =>
+                  setOrderStatusFilter(event.target.value as "all" | OrderStatus)
+                }
+              >
+                <option value="all">All statuses</option>
+                {orderStatuses.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+            }
+          />
           <OrderTable
             disabled={isSaving}
             itemsByOrder={orderItemsByOrder}
             onStatusChange={handleOrderStatus}
-            orders={snapshot.orders}
+            orders={filteredOrders}
           />
         </section>
       ) : null}
 
       {activeView === "products" ? (
         <section aria-labelledby="products-title">
-          <h2 id="products-title">Product operations</h2>
+          <SectionHeading
+            title="Product operations"
+            id="products-title"
+            meta={`${filteredProducts.length} shown`}
+          />
+          <AdminControls
+            query={adminQuery}
+            queryLabel="Search products"
+            onQueryChange={setAdminQuery}
+            filter={
+              <select
+                aria-label="Filter products by status"
+                value={productStatusFilter}
+                onChange={(event) =>
+                  setProductStatusFilter(
+                    event.target.value as "all" | CatalogProductStatus,
+                  )
+                }
+              >
+                <option value="all">All statuses</option>
+                {catalogStatuses.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+            }
+          />
           <ProductTable
             disabled={isSaving}
             drafts={stockDrafts}
             onDraftChange={setStockDrafts}
             onPatch={handleProductPatch}
             onStockSave={handleProductStockSave}
-            products={snapshot.catalogProducts}
+            products={filteredProducts}
           />
         </section>
       ) : null}
 
       {activeView === "customers" ? (
         <section aria-labelledby="customers-title">
-          <h2 id="customers-title">Customers</h2>
+          <SectionHeading
+            title="Customers"
+            id="customers-title"
+            meta={`${filteredCustomers.length} shown`}
+          />
+          <AdminControls
+            query={adminQuery}
+            queryLabel="Search customers"
+            onQueryChange={setAdminQuery}
+            filter={
+              <select
+                aria-label="Filter customers by role"
+                value={customerRoleFilter}
+                onChange={(event) =>
+                  setCustomerRoleFilter(event.target.value as "all" | AccountRole)
+                }
+              >
+                <option value="all">All roles</option>
+                <option value="customer">Customer</option>
+                <option value="admin">Admin</option>
+              </select>
+            }
+          />
           <CustomerTable
             currentAdminId={profile?.id}
-            customers={snapshot.profiles}
+            customers={filteredCustomers}
             disabled={isSaving}
             onRoleChange={handleRoleChange}
           />
         </section>
       ) : null}
     </section>
+  );
+}
+
+function SectionHeading({
+  id,
+  meta,
+  title,
+}: {
+  id: string;
+  meta: string;
+  title: string;
+}) {
+  return (
+    <div className={styles.sectionHeading}>
+      <h2 id={id}>{title}</h2>
+      <span>{meta}</span>
+    </div>
+  );
+}
+
+function AdminControls({
+  filter,
+  onQueryChange,
+  query,
+  queryLabel,
+}: {
+  filter: ReactNode;
+  onQueryChange: (query: string) => void;
+  query: string;
+  queryLabel: string;
+}) {
+  return (
+    <div className={styles.adminControls}>
+      <label>
+        <span>{queryLabel}</span>
+        <input
+          type="search"
+          value={query}
+          placeholder="Search"
+          onChange={(event) => onQueryChange(event.target.value)}
+        />
+      </label>
+      {filter}
+    </div>
   );
 }
 
