@@ -6,6 +6,7 @@ import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { formatPrice } from "@/data/products";
 import {
   getSupabaseBrowserClient,
+  isGoogleOAuthEnabled,
   isSupabaseConfigured,
 } from "@/lib/supabase/client";
 import {
@@ -40,6 +41,7 @@ export function AccountClient() {
   const [signupName, setSignupName] = useState("");
   const [profile, setProfile] = useState<ProfileDraft>(emptyProfile);
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
+  const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
   const [isBooting, setIsBooting] = useState(supabaseReady);
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,10 +90,7 @@ export function AccountClient() {
       if (!data) {
         const fallbackProfile: ProfileDraft = {
           ...emptyProfile,
-          fullName:
-            typeof activeSession.user.user_metadata.full_name === "string"
-              ? activeSession.user.user_metadata.full_name
-              : "",
+          fullName: getSessionDisplayName(activeSession),
           role: "customer",
         };
 
@@ -123,6 +122,20 @@ export function AccountClient() {
       setIsOrdersLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!supabaseReady) return;
+
+    let isMounted = true;
+
+    void isGoogleOAuthEnabled().then((isEnabled) => {
+      if (isMounted) setGoogleOAuthEnabled(isEnabled);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [supabaseReady]);
 
   useEffect(() => {
     if (!supabaseReady) return;
@@ -224,6 +237,35 @@ export function AccountClient() {
       setMessage(error instanceof Error ? error.message : "Authentication failed.");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    if (!supabaseReady) {
+      setMessage("Account access is waiting for Supabase keys.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          queryParams: {
+            prompt: "select_account",
+          },
+          redirectTo: getAccountRedirectUrl(),
+        },
+      });
+
+      if (error) throw error;
+      setMessage("Redirecting to Google...");
+    } catch (error) {
+      setIsSubmitting(false);
+      setMessage(error instanceof Error ? error.message : "Google sign-in failed.");
     }
   }
 
@@ -394,6 +436,25 @@ export function AccountClient() {
         </button>
       </div>
 
+      {googleOAuthEnabled ? (
+        <>
+          <button
+            className={styles.oauthButton}
+            type="button"
+            disabled={isSubmitting}
+            onClick={handleGoogleSignIn}
+          >
+            Continue with Google
+          </button>
+
+          <div className={styles.oauthDivider} aria-hidden="true">
+            <span />
+            <strong>or</strong>
+            <span />
+          </div>
+        </>
+      ) : null}
+
       <form className={styles.form} onSubmit={handleAuthSubmit}>
         {mode === "create-account" ? (
           <>
@@ -525,4 +586,25 @@ function formatAddress(address: Json) {
   return [value.addressLine1, value.city, value.country]
     .filter((part): part is string => typeof part === "string" && part.length > 0)
     .join(", ");
+}
+
+function getAccountRedirectUrl() {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  const origin =
+    typeof window !== "undefined"
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_SITE_URL;
+  const normalizedBasePath =
+    basePath.length > 0 ? `/${basePath.replace(/^\/+|\/+$/g, "")}` : "";
+
+  return `${origin}${normalizedBasePath}/account/`;
+}
+
+function getSessionDisplayName(activeSession: Session) {
+  const metadata = activeSession.user.user_metadata;
+
+  if (typeof metadata.full_name === "string") return metadata.full_name;
+  if (typeof metadata.name === "string") return metadata.name;
+
+  return "";
 }

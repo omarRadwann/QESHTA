@@ -64,6 +64,45 @@
   border-bottom-color: currentColor;
 }
 
+.oauthButton {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #050505;
+  color: #050505;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.76rem;
+  font-family: inherit;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 38px;
+  text-transform: uppercase;
+}
+
+.oauthButton:disabled {
+  cursor: wait;
+  opacity: 0.56;
+}
+
+.oauthDivider {
+  align-items: center;
+  color: #76706a;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr auto 1fr;
+}
+
+.oauthDivider span {
+  border-top: 1px solid #e3dfda;
+}
+
+.oauthDivider strong {
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .form,
 .profileForm {
   display: grid;

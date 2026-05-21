@@ -272,7 +272,13 @@ begin
   values (
     new.id,
     coalesce(new.email, ''),
-    nullif(new.raw_user_meta_data ->> 'full_name', '')
+    nullif(
+      coalesce(
+        new.raw_user_meta_data ->> 'full_name',
+        new.raw_user_meta_data ->> 'name'
+      ),
+      ''
+    )
   )
   on conflict (id) do update
   set email = excluded.email,

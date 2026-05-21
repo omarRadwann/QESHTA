@@ -12,6 +12,30 @@ export function isSupabaseConfigured() {
   return Boolean(supabaseUrl && supabasePublishableKey);
 }
 
+export async function isGoogleOAuthEnabled() {
+  if (!supabaseUrl || !supabasePublishableKey) return false;
+
+  try {
+    const response = await fetch(`${supabaseUrl}/auth/v1/settings`, {
+      headers: {
+        apikey: supabasePublishableKey,
+      },
+    });
+
+    if (!response.ok) return false;
+
+    const settings = (await response.json()) as {
+      external?: {
+        google?: boolean;
+      };
+    };
+
+    return settings.external?.google === true;
+  } catch {
+    return false;
+  }
+}
+
 export function getSupabaseBrowserClient() {
   if (!supabaseUrl || !supabasePublishableKey) {
     throw new Error("Supabase environment variables are not configured.");
