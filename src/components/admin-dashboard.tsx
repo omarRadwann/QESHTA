@@ -38,9 +38,10 @@ import styles from "./admin-dashboard.module.css";
 
 type AdminView = "overview" | "orders" | "products" | "customers";
 type AccessState = "booting" | "unconfigured" | "signed-out" | "denied" | "ready";
-type StockDraft = {
+type ProductDraft = {
   inventoryQuantity: string;
   lowStockThreshold: string;
+  price: string;
 };
 
 const views: { label: string; value: AdminView }[] = [
@@ -60,7 +61,7 @@ export function AdminDashboard() {
   const [activeView, setActiveView] = useState<AdminView>("overview");
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [snapshot, setSnapshot] = useState<AdminSnapshot | null>(null);
-  const [stockDrafts, setStockDrafts] = useState<Record<string, StockDraft>>({});
+  const [productDrafts, setProductDrafts] = useState<Record<string, ProductDraft>>({});
   const [adminQuery, setAdminQuery] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState<"all" | OrderStatus>(
     "all",
@@ -109,7 +110,7 @@ export function AdminDashboard() {
 
         setProfile(access.profile);
         setSnapshot(nextSnapshot);
-        setStockDrafts(makeStockDrafts(nextSnapshot.catalogProducts));
+        setProductDrafts(makeProductDrafts(nextSnapshot.catalogProducts));
         setAccessState("ready");
       } catch (error) {
         if (!isMounted) return;
@@ -243,7 +244,7 @@ export function AdminDashboard() {
     const supabase = getSupabaseBrowserClient();
     const nextSnapshot = await fetchAdminSnapshot(supabase);
     setSnapshot(nextSnapshot);
-    setStockDrafts(makeStockDrafts(nextSnapshot.catalogProducts));
+    setProductDrafts(makeProductDrafts(nextSnapshot.catalogProducts));
     if (successMessage) setMessage(successMessage);
   }
 
@@ -296,20 +297,32 @@ export function AdminDashboard() {
     }
   }
 
-  async function handleProductStockSave(productId: string) {
-    const draft = stockDrafts[productId];
+  async function handleProductSave(productId: string) {
+    const draft = productDrafts[productId];
     if (!draft) return;
+
+    if (
+      draft.inventoryQuantity.trim() === "" ||
+      draft.lowStockThreshold.trim() === "" ||
+      draft.price.trim() === ""
+    ) {
+      setMessage("Price, stock, and threshold are required before saving.");
+      return;
+    }
 
     const inventoryQuantity = Number(draft.inventoryQuantity);
     const lowStockThreshold = Number(draft.lowStockThreshold);
+    const price = Number(draft.price);
 
     if (
       !Number.isInteger(inventoryQuantity) ||
       inventoryQuantity < 0 ||
       !Number.isInteger(lowStockThreshold) ||
-      lowStockThreshold < 0
+      lowStockThreshold < 0 ||
+      !Number.isFinite(price) ||
+      price < 0
     ) {
-      setMessage("Stock and threshold must be whole numbers greater than or equal to 0.");
+      setMessage("Price, stock, and threshold must be valid numbers greater than or equal to 0.");
       return;
     }
 
@@ -321,8 +334,9 @@ export function AdminDashboard() {
       await updateCatalogProduct(supabase, productId, {
         inventory_quantity: inventoryQuantity,
         low_stock_threshold: lowStockThreshold,
+        price,
       });
-      await refreshSnapshot("Inventory saved.");
+      await refreshSnapshot("Product saved.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Inventory update failed.");
     } finally {
@@ -454,10 +468,10 @@ export function AdminDashboard() {
               <h2 id="stock-watch-title">Stock watch</h2>
               <ProductTable
                 disabled={isSaving}
-                drafts={stockDrafts}
-                onDraftChange={setStockDrafts}
+                drafts={productDrafts}
+                onDraftChange={setProductDrafts}
                 onPatch={handleProductPatch}
-                onStockSave={handleProductStockSave}
+                onProductSave={handleProductSave}
                 products={snapshot.catalogProducts
                   .filter(
                     (product) =>
@@ -539,10 +553,10 @@ export function AdminDashboard() {
           />
           <ProductTable
             disabled={isSaving}
-            drafts={stockDrafts}
-            onDraftChange={setStockDrafts}
+            drafts={productDrafts}
+            onDraftChange={setProductDrafts}
             onPatch={handleProductPatch}
-            onStockSave={handleProductStockSave}
+            onProductSave={handleProductSave}
             products={filteredProducts}
           />
         </section>
@@ -732,12 +746,12 @@ function ProductTable({
   drafts,
   onDraftChange,
   onPatch,
-  onStockSave,
+  onProductSave,
   products,
 }: {
   disabled: boolean;
-  drafts: Record<string, StockDraft>;
-  onDraftChange: Dispatch<SetStateAction<Record<string, StockDraft>>>;
+  drafts: Record<string, ProductDraft>;
+  onDraftChange: Dispatch<SetStateAction<Record<string, ProductDraft>>>;
   onPatch: (
     productId: string,
     patch: {
@@ -746,7 +760,7 @@ function ProductTable({
       status?: CatalogProductStatus;
     },
   ) => void;
-  onStockSave: (productId: string) => void;
+  onProductSave: (productId: string) => void;
   products: AdminSnapshot["catalogProducts"];
 }) {
   if (products.length === 0) {
@@ -759,6 +773,7 @@ function ProductTable({
         <thead>
           <tr>
             <th>Product</th>
+            <th>Price</th>
             <th>Status</th>
             <th>Stock</th>
             <th>Threshold</th>
@@ -772,6 +787,7 @@ function ProductTable({
             const draft = drafts[product.product_id] ?? {
               inventoryQuantity: String(product.inventory_quantity),
               lowStockThreshold: String(product.low_stock_threshold),
+              price: String(Number(product.price)),
             };
             const isLinked = storefrontProductIds.has(product.product_id);
 
@@ -793,6 +809,25 @@ function ProductTable({
                       </span>
                     </div>
                   </div>
+                </td>
+                <td>
+                  <input
+                    aria-label={`Price for ${product.name}`}
+                    disabled={disabled}
+                    min={0}
+                    step="0.01"
+                    type="number"
+                    value={draft.price}
+                    onChange={(event) =>
+                      onDraftChange((current) => ({
+                        ...current,
+                        [product.product_id]: {
+                          ...draft,
+                          price: event.target.value,
+                        },
+                      }))
+                    }
+                  />
                 </td>
                 <td>
                   <select
@@ -883,7 +918,7 @@ function ProductTable({
                     className={styles.tableButton}
                     disabled={disabled}
                     type="button"
-                    onClick={() => onStockSave(product.product_id)}
+                    onClick={() => onProductSave(product.product_id)}
                   >
                     Save
                   </button>
@@ -961,13 +996,14 @@ function CustomerTable({
   );
 }
 
-function makeStockDrafts(products: AdminSnapshot["catalogProducts"]) {
+function makeProductDrafts(products: AdminSnapshot["catalogProducts"]) {
   return Object.fromEntries(
     products.map((product) => [
       product.product_id,
       {
         inventoryQuantity: String(product.inventory_quantity),
         lowStockThreshold: String(product.low_stock_threshold),
+        price: String(Number(product.price)),
       },
     ]),
   );

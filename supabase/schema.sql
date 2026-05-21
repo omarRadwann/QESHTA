@@ -468,6 +468,7 @@ grant update (
   low_stock_threshold,
   allow_backorder,
   featured,
+  price,
   updated_at
 ) on public.catalog_products to authenticated;
 
@@ -491,8 +492,9 @@ grant update (
 ) on public.profiles to authenticated;
 
 grant select on public.catalog_products to authenticated;
-grant update (status, inventory_quantity, low_stock_threshold, allow_backorder, featured)
+grant update (status, inventory_quantity, low_stock_threshold, allow_backorder, featured, price)
 on public.catalog_products to authenticated;
+grant update (price, updated_at) on public.catalog_products to authenticated;
 grant select on public.orders to authenticated;
 grant update (status, notes, updated_at) on public.orders to authenticated;
 grant select on public.order_items to authenticated;

@@ -6,6 +6,7 @@ export type PublicCatalogProduct = Pick<
   | "allow_backorder"
   | "inventory_quantity"
   | "low_stock_threshold"
+  | "price"
   | "product_id"
   | "status"
   | "updated_at"
@@ -16,6 +17,7 @@ export type ProductAvailability = {
   inventoryQuantity: number;
   isAvailable: boolean;
   isLowStock: boolean;
+  price: number;
   productId: string;
   status: string;
 };
@@ -26,7 +28,7 @@ export async function fetchPublicCatalog(
   const { data, error } = await supabase
     .from("catalog_products")
     .select(
-      "allow_backorder, inventory_quantity, low_stock_threshold, product_id, status, updated_at",
+      "allow_backorder, inventory_quantity, low_stock_threshold, price, product_id, status, updated_at",
     )
     .order("updated_at", { ascending: false });
 
@@ -41,7 +43,7 @@ export async function fetchProductAvailability(
   const { data, error } = await supabase
     .from("catalog_products")
     .select(
-      "allow_backorder, inventory_quantity, low_stock_threshold, product_id, status, updated_at",
+      "allow_backorder, inventory_quantity, low_stock_threshold, price, product_id, status, updated_at",
     )
     .eq("product_id", productId)
     .maybeSingle();
@@ -66,6 +68,7 @@ function normalizeAvailability(product: PublicCatalogProduct): ProductAvailabili
       !product.allow_backorder &&
       product.inventory_quantity > 0 &&
       product.inventory_quantity <= product.low_stock_threshold,
+    price: Number(product.price),
     productId: product.product_id,
     status: product.status,
   };

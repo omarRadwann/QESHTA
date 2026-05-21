@@ -181,6 +181,74 @@
   text-transform: uppercase;
 }
 
+.orderHistory {
+  display: grid;
+  gap: 14px;
+}
+
+.sectionHeading,
+.orderMeta,
+.orderDetails {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.sectionHeading h2,
+.orderItem h3 {
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.sectionHeading span,
+.orderMeta p,
+.orderDetails span,
+.orderItem p {
+  color: #57514c;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.emptyOrders,
+.orderItem {
+  border-top: 1px solid #e3dfda;
+  display: grid;
+  gap: 10px;
+  padding: 14px 0 0;
+}
+
+.emptyOrders a {
+  color: #050505;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.orderList {
+  display: grid;
+  gap: 16px;
+}
+
+.orderMeta > div {
+  display: grid;
+  gap: 6px;
+}
+
+.orderMeta strong {
+  font-size: 0.78rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.orderItem > p {
+  color: #050505;
+}
+
 @media (max-width: 640px) {
   .accountHeader,
   .summaryGrid {
@@ -188,6 +256,13 @@
   }
 
   .accountHeader {
+    display: grid;
+  }
+
+  .sectionHeading,
+  .orderMeta,
+  .orderDetails {
+    align-items: flex-start;
     display: grid;
   }
 }

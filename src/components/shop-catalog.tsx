@@ -95,6 +95,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
 
     const nextProducts = products.filter((product) => {
       const availabilityState = availabilityMap?.get(product.id);
+      const displayPrice = availabilityState?.price ?? product.price;
       const catalogMatch = availabilityMap ? Boolean(availabilityState) : true;
       const categoryMatch =
         activeCategory === "View All" || product.category === activeCategory;
@@ -118,13 +119,16 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
         queryMatch &&
         matchesSelected(product.material, materials) &&
         matchesSelected(product.color, colors) &&
-        product.price <= priceCeiling
+        displayPrice <= priceCeiling
       );
     });
 
     return [...nextProducts].sort((a, b) => {
-      if (sort === "price-asc") return a.price - b.price;
-      if (sort === "price-desc") return b.price - a.price;
+      const priceA = availabilityMap?.get(a.id)?.price ?? a.price;
+      const priceB = availabilityMap?.get(b.id)?.price ?? b.price;
+
+      if (sort === "price-asc") return priceA - priceB;
+      if (sort === "price-desc") return priceB - priceA;
       if (sort === "newest") return Number(Boolean(b.isNew)) - Number(Boolean(a.isNew));
       return 0;
     });
@@ -311,6 +315,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
               <ProductCard
                 key={product.id}
                 product={product}
+                displayPrice={productAvailability?.price}
                 href={getProductUrl(product)}
                 isLowStock={productAvailability?.isLowStock}
                 isSoldOut={productAvailability ? !productAvailability.isAvailable : false}
@@ -329,6 +334,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
               <ProductCard
                 key={product.id}
                 product={product}
+                displayPrice={productAvailability?.price}
                 href={getProductUrl(product)}
                 isLowStock={productAvailability?.isLowStock}
                 isSoldOut={productAvailability ? !productAvailability.isAvailable : false}

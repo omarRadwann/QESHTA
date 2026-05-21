@@ -14,7 +14,10 @@ import {
 } from "@/data/products";
 import { assetPath } from "@/lib/assets";
 import { addCartLine } from "@/lib/cart";
-import { fetchProductAvailability } from "@/lib/supabase/catalog";
+import {
+  fetchProductAvailability,
+  type ProductAvailability,
+} from "@/lib/supabase/catalog";
 import {
   getSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -52,6 +55,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const [availabilityState, setAvailabilityState] = useState<
     "available" | "checking" | "sold-out" | "unavailable"
   >(isSupabaseConfigured() ? "checking" : "available");
+  const [liveAvailability, setLiveAvailability] =
+    useState<ProductAvailability | null>(null);
   const cartStateResetTimer = useRef<number | null>(null);
 
   const activeTabContent = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
@@ -60,6 +65,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const mediaAlt = selectedVariant.detailHeroAlt ?? product.detailHeroAlt ?? product.alt;
   const hasEditorialMedia = Boolean(selectedVariant.detailHeroImage ?? product.detailHeroImage);
   const canAddToCart = availabilityState === "available";
+  const displayPrice = liveAvailability?.price ?? product.price;
 
   useEffect(() => {
     return () => {
@@ -82,10 +88,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
         if (!isMounted) return;
 
         if (!availability) {
+          setLiveAvailability(null);
           setAvailabilityState("unavailable");
           return;
         }
 
+        setLiveAvailability(availability);
         setAvailabilityState(availability.isAvailable ? "available" : "sold-out");
       } catch {
         if (isMounted) setAvailabilityState("available");
@@ -109,7 +117,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
     addCartLine({
       productId: product.id,
       name: product.name,
-      price: product.price,
+      price: displayPrice,
       image: selectedVariant.image,
       variantId: selectedVariant.id,
       variantLabel: selectedVariant.label,
@@ -146,7 +154,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
         <div className={styles.metaRow}>
           <div>
             <h1 id="product-title">{product.name}</h1>
-            <p>${formatPrice(product.price)}</p>
+            <p>${formatPrice(displayPrice)}</p>
           </div>
           {product.isNew ? <span>New</span> : null}
         </div>

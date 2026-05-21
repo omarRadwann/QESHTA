@@ -113,6 +113,7 @@ export async function updateCatalogProduct(
     | "featured"
     | "inventory_quantity"
     | "low_stock_threshold"
+    | "price"
     | "status"
   >,
 ) {

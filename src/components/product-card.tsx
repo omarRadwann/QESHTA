@@ -9,6 +9,7 @@ type ProductCardProps = {
   product: Product;
   priority?: boolean;
   compact?: boolean;
+  displayPrice?: number;
   href?: string;
   isLowStock?: boolean;
   isSoldOut?: boolean;
@@ -19,6 +20,7 @@ export function ProductCard({
   product,
   priority = false,
   compact = false,
+  displayPrice,
   href = getProductUrl(product),
   isLowStock = false,
   isSoldOut = false,
@@ -44,7 +46,7 @@ export function ProductCard({
         {!isSoldOut && isLowStock ? <span className={styles.badge}>Low stock</span> : null}
       </Link>
       <h3>{product.name}</h3>
-      <p>{formatPrice(product.price)}</p>
+      <p>{formatPrice(displayPrice ?? product.price)}</p>
     </article>
   );
 }

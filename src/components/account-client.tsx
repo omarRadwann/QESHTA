@@ -3,11 +3,16 @@
 import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { formatPrice } from "@/data/products";
 import {
   getSupabaseBrowserClient,
   isSupabaseConfigured,
 } from "@/lib/supabase/client";
-import type { CustomerProfileInsert } from "@/lib/supabase/types";
+import {
+  fetchCustomerOrders,
+  type CustomerOrder,
+} from "@/lib/supabase/orders";
+import type { CustomerProfileInsert, Json } from "@/lib/supabase/types";
 import styles from "@/app/account/page.module.css";
 
 type AuthMode = "sign-in" | "create-account";
@@ -34,7 +39,9 @@ export function AccountClient() {
   const [password, setPassword] = useState("");
   const [signupName, setSignupName] = useState("");
   const [profile, setProfile] = useState<ProfileDraft>(emptyProfile);
+  const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [isBooting, setIsBooting] = useState(supabaseReady);
+  const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -103,6 +110,20 @@ export function AccountClient() {
     [saveProfile],
   );
 
+  const loadOrders = useCallback(async () => {
+    const supabase = getSupabaseBrowserClient();
+    setIsOrdersLoading(true);
+
+    try {
+      const customerOrders = await fetchCustomerOrders(supabase);
+      setOrders(customerOrders);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Order history failed to load.");
+    } finally {
+      setIsOrdersLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!supabaseReady) return;
 
@@ -124,7 +145,7 @@ export function AccountClient() {
       setEmail(data.session?.user.email ?? "");
 
       if (data.session) {
-        await loadProfile(data.session);
+        await Promise.all([loadProfile(data.session), loadOrders()]);
       }
 
       if (isMounted) setIsBooting(false);
@@ -139,9 +160,11 @@ export function AccountClient() {
       if (nextSession) {
         window.setTimeout(() => {
           void loadProfile(nextSession);
+          void loadOrders();
         }, 0);
       } else {
         setProfile(emptyProfile);
+        setOrders([]);
       }
     });
 
@@ -151,7 +174,7 @@ export function AccountClient() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [loadProfile, supabaseReady]);
+  }, [loadOrders, loadProfile, supabaseReady]);
 
   async function handleAuthSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -334,6 +357,8 @@ export function AccountClient() {
           </Link>
         ) : null}
 
+        <OrderHistory isLoading={isOrdersLoading} orders={orders} />
+
         {message ? <p className={styles.statusMessage}>{message}</p> : null}
       </section>
     );
@@ -419,4 +444,85 @@ export function AccountClient() {
       {message ? <p className={styles.statusMessage}>{message}</p> : null}
     </section>
   );
+}
+
+function OrderHistory({
+  isLoading,
+  orders,
+}: {
+  isLoading: boolean;
+  orders: CustomerOrder[];
+}) {
+  return (
+    <section className={styles.orderHistory} aria-labelledby="account-orders-title">
+      <div className={styles.sectionHeading}>
+        <h2 id="account-orders-title">Order history</h2>
+        <span>
+          {isLoading
+            ? "Loading"
+            : `${orders.length} order${orders.length === 1 ? "" : "s"}`}
+        </span>
+      </div>
+
+      {orders.length === 0 ? (
+        <div className={styles.emptyOrders}>
+          <p>{isLoading ? "Loading order history..." : "No orders yet."}</p>
+          {!isLoading ? <Link href="/shop/">Start Shopping</Link> : null}
+        </div>
+      ) : (
+        <div className={styles.orderList}>
+          {orders.map((order) => (
+            <article key={order.id} className={styles.orderItem}>
+              <div className={styles.orderMeta}>
+                <div>
+                  <h3>{order.order_number}</h3>
+                  <p>{formatDate(order.created_at)}</p>
+                </div>
+                <strong>${formatPrice(Number(order.total))}</strong>
+              </div>
+              <div className={styles.orderDetails}>
+                <span>{formatOrderStatus(order.status)}</span>
+                <span>{formatAddress(order.shipping_address)}</span>
+              </div>
+              <p>{summarizeItems(order.items)}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatOrderStatus(status: string) {
+  return status
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function summarizeItems(items: CustomerOrder["items"]) {
+  if (items.length === 0) return "No items recorded.";
+
+  return items
+    .map((item) => `${item.quantity} x ${item.name} / ${item.size}`)
+    .join(", ");
+}
+
+function formatAddress(address: Json) {
+  if (!address || typeof address !== "object" || Array.isArray(address)) {
+    return "No address";
+  }
+
+  const value = address as Record<string, Json>;
+  return [value.addressLine1, value.city, value.country]
+    .filter((part): part is string => typeof part === "string" && part.length > 0)
+    .join(", ");
 }

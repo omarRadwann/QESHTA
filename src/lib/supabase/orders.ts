@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CartLine } from "@/lib/cart";
-import type { Database } from "./types";
+import type { Database, Order, OrderItem } from "./types";
 
 export type CheckoutDetails = {
   addressLine1: string;
@@ -10,6 +10,10 @@ export type CheckoutDetails = {
   customerName: string;
   notes: string;
   phone: string;
+};
+
+export type CustomerOrder = Order & {
+  items: OrderItem[];
 };
 
 export async function createOrder(
@@ -47,4 +51,44 @@ export async function createOrder(
 
   if (error) throw error;
   return data;
+}
+
+export async function fetchCustomerOrders(
+  supabase: SupabaseClient<Database>,
+): Promise<CustomerOrder[]> {
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+  if (sessionError) throw sessionError;
+  if (!sessionData.session) return [];
+
+  const { data: orders, error: ordersError } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("user_id", sessionData.session.user.id)
+    .order("created_at", { ascending: false });
+
+  if (ordersError) throw ordersError;
+  if (!orders || orders.length === 0) return [];
+
+  const orderIds = orders.map((order) => order.id);
+  const { data: items, error: itemsError } = await supabase
+    .from("order_items")
+    .select("*")
+    .in("order_id", orderIds)
+    .order("created_at", { ascending: true });
+
+  if (itemsError) throw itemsError;
+
+  const itemsByOrder = new Map<string, OrderItem[]>();
+
+  (items ?? []).forEach((item) => {
+    const currentItems = itemsByOrder.get(item.order_id) ?? [];
+    currentItems.push(item);
+    itemsByOrder.set(item.order_id, currentItems);
+  });
+
+  return orders.map((order) => ({
+    ...order,
+    items: itemsByOrder.get(order.id) ?? [],
+  }));
 }

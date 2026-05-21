@@ -8,7 +8,7 @@ Next.js storefront for QESHTA, a quiet luxury clothing ecommerce brand.
 - TypeScript
 - Supabase Auth, customer profiles, and admin roles
 - Supabase-backed saved carts and order capture
-- Protected admin dashboard for orders, customers, and inventory operations
+- Protected admin dashboard for orders, customers, pricing, and inventory operations
 - Tailwind CSS 4 available, with custom CSS modules for the homepage art direction
 - SEO-ready metadata, robots, sitemap, Open Graph, Twitter cards, and JSON-LD product data
 
@@ -49,6 +49,8 @@ src/
     supabase/
       cart-sync.ts
       client.ts
+      catalog.ts
+      admin.ts
       orders.ts
       types.ts
 public/
@@ -89,8 +91,9 @@ Do not expose `SUPABASE_SERVICE_ROLE_KEY` in client builds.
 The schema creates:
 
 - Customer profiles keyed to `auth.users`
+- Customer-facing account order history
 - Admin/customer account roles with guarded role updates
-- Catalog product inventory and merchandising controls
+- Catalog product pricing, inventory, and merchandising controls
 - Saved carts and cart line items
 - Customer orders and order line items
 - RLS policies so customers only access their own records and admins can manage back-office data
