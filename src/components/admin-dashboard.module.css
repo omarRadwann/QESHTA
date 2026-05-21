@@ -192,9 +192,11 @@
 .adminControls input,
 .adminControls select,
 .productForm input,
+.productForm input[type="file"],
 .productForm select,
 .productForm textarea,
 .productEditGrid input,
+.productEditGrid input[type="file"],
 .productEditGrid select,
 .productEditGrid textarea {
   background: #ffffff;
@@ -204,6 +206,12 @@
   font-family: inherit;
   min-height: 34px;
   padding: 0 9px;
+}
+
+.productForm input[type="file"],
+.productEditGrid input[type="file"] {
+  cursor: pointer;
+  padding: 6px 9px;
 }
 
 .productForm {
@@ -352,6 +360,96 @@
   padding: 16px 10px 18px;
 }
 
+.orderDetailRow td {
+  background: #fbfaf8;
+  padding: 18px 10px 22px;
+}
+
+.orderDetailGrid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(260px, 1.1fr);
+  margin-bottom: 18px;
+}
+
+.orderDetailGrid section,
+.orderNotes {
+  border: 1px solid #e2ddd8;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.orderDetailGrid h3,
+.orderNotes span {
+  color: #6d6862;
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.orderDetailGrid p,
+.orderDetailGrid a,
+.orderDetailGrid section span {
+  color: #050505;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  margin: 0;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.orderDetailGrid section span {
+  color: #6d6862;
+}
+
+.orderNotes textarea {
+  background: #ffffff;
+  border: 1px solid #bdb7b0;
+  border-radius: 0;
+  color: #050505;
+  font-family: inherit;
+  min-height: 92px;
+  padding: 9px;
+  resize: vertical;
+}
+
+.orderItems {
+  display: grid;
+  gap: 1px;
+}
+
+.orderDetailActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.orderItems article {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e2ddd8;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  padding: 10px;
+}
+
+.orderItems img {
+  background: #f4f1ec;
+  height: 72px;
+  object-fit: contain;
+  width: 72px;
+}
+
+.orderItems p {
+  font-size: 0.76rem;
+  font-weight: 800;
+  margin: 0;
+}
+
 .table input[type="checkbox"] {
   height: 14px;
   min-height: 0;
@@ -371,6 +469,18 @@
   height: 72px;
   object-fit: contain;
   width: 72px;
+}
+
+.imageInputGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.imagePreview {
+  background: #f4f1ec;
+  height: 104px;
+  object-fit: contain;
+  width: 104px;
 }
 
 .switchLabel {
@@ -454,7 +564,8 @@
   }
 
   .productFormGrid,
-  .productEditGrid {
+  .productEditGrid,
+  .orderDetailGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -478,7 +589,9 @@
 
   .productFormGrid,
   .productEditGrid,
-  .productWideField {
+  .productWideField,
+  .orderDetailGrid,
+  .orderItems article {
     grid-template-columns: 1fr;
   }
 

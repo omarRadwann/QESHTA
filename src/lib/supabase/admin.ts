@@ -9,6 +9,7 @@ import type {
   Database,
   Order,
   OrderItem,
+  OrderUpdate,
   OrderStatus,
 } from "./types";
 
@@ -97,9 +98,20 @@ export async function updateOrderStatus(
   orderId: string,
   status: OrderStatus,
 ) {
+  await updateOrderManagement(supabase, orderId, { status });
+}
+
+export async function updateOrderManagement(
+  supabase: SupabaseClient<Database>,
+  orderId: string,
+  patch: Pick<OrderUpdate, "notes" | "status">,
+) {
   const { error } = await supabase
     .from("orders")
-    .update({ status, updated_at: new Date().toISOString() })
+    .update({
+      ...patch,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", orderId);
 
   if (error) throw error;

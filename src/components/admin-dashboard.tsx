@@ -27,13 +27,14 @@ import {
   orderStatuses,
   updateCatalogProduct,
   updateCustomerRole,
-  updateOrderStatus,
+  updateOrderManagement,
   type AdminSnapshot,
 } from "@/lib/supabase/admin";
 import {
   getSupabaseBrowserClient,
   isSupabaseConfigured,
 } from "@/lib/supabase/client";
+import { uploadProductImage } from "@/lib/supabase/storage";
 import type {
   AccountRole,
   CatalogProductStatus,
@@ -46,6 +47,10 @@ import styles from "./admin-dashboard.module.css";
 
 type AdminView = "overview" | "orders" | "products" | "customers";
 type AccessState = "booting" | "unconfigured" | "signed-out" | "denied" | "ready";
+type OrderDraft = {
+  notes: string;
+  status: OrderStatus;
+};
 type ProductDraft = {
   alt: string;
   category: string;
@@ -94,6 +99,8 @@ export function AdminDashboard() {
   const [activeView, setActiveView] = useState<AdminView>("overview");
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [snapshot, setSnapshot] = useState<AdminSnapshot | null>(null);
+  const [orderDrafts, setOrderDrafts] = useState<Record<string, OrderDraft>>({});
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [productDrafts, setProductDrafts] = useState<Record<string, ProductDraft>>({});
   const [newProductDraft, setNewProductDraft] = useState<NewProductDraft>(
     makeEmptyProductDraft,
@@ -146,6 +153,7 @@ export function AdminDashboard() {
 
         setProfile(access.profile);
         setSnapshot(nextSnapshot);
+        setOrderDrafts(makeOrderDrafts(nextSnapshot.orders));
         setProductDrafts(makeProductDrafts(nextSnapshot.catalogProducts));
         setAccessState("ready");
       } catch (error) {
@@ -280,32 +288,62 @@ export function AdminDashboard() {
     const supabase = getSupabaseBrowserClient();
     const nextSnapshot = await fetchAdminSnapshot(supabase);
     setSnapshot(nextSnapshot);
+    setOrderDrafts(makeOrderDrafts(nextSnapshot.orders));
     setProductDrafts(makeProductDrafts(nextSnapshot.catalogProducts));
     if (successMessage) setMessage(successMessage);
   }
 
-  async function handleOrderStatus(order: Order, status: OrderStatus) {
+  async function handleOrderSave(order: Order) {
+    const draft = orderDrafts[order.id] ?? makeOrderDraft(order);
     setIsSaving(true);
     setMessage("");
 
     try {
       const supabase = getSupabaseBrowserClient();
-      await updateOrderStatus(supabase, order.id, status);
+      await updateOrderManagement(supabase, order.id, {
+        notes: nullIfBlank(draft.notes),
+        status: draft.status,
+      });
       setSnapshot((current) =>
         current
           ? {
               ...current,
               orders: current.orders.map((item) =>
                 item.id === order.id
-                  ? { ...item, status, updated_at: new Date().toISOString() }
+                  ? {
+                      ...item,
+                      notes: nullIfBlank(draft.notes),
+                      status: draft.status,
+                      updated_at: new Date().toISOString(),
+                    }
                   : item,
               ),
             }
           : current,
       );
-      setMessage(`Order ${order.order_number} updated.`);
+      setMessage(`Order ${order.order_number} saved.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Order update failed.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleImageUpload(
+    file: File,
+    productId: string,
+    onUploaded: (publicUrl: string) => void,
+  ) {
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const publicUrl = await uploadProductImage(supabase, file, productId);
+      onUploaded(publicUrl);
+      setMessage("Image uploaded. Save the product to publish the new image.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Image upload failed.");
     } finally {
       setIsSaving(false);
     }
@@ -532,8 +570,12 @@ export function AdminDashboard() {
               <h2 id="latest-orders-title">Latest orders</h2>
               <OrderTable
                 disabled={isSaving}
+                expandedOrderId={expandedOrderId}
                 itemsByOrder={orderItemsByOrder}
-                onStatusChange={handleOrderStatus}
+                drafts={orderDrafts}
+                onDraftChange={setOrderDrafts}
+                onOrderSave={handleOrderSave}
+                onToggleExpanded={setExpandedOrderId}
                 orders={snapshot.orders.slice(0, 6)}
               />
             </section>
@@ -545,6 +587,9 @@ export function AdminDashboard() {
                 drafts={productDrafts}
                 onDraftChange={setProductDrafts}
                 onDelete={handleProductDelete}
+                onImageUpload={(productId, file, _field, onUploaded) =>
+                  handleImageUpload(file, productId, onUploaded)
+                }
                 onPatch={handleProductPatch}
                 onProductSave={handleProductSave}
                 products={snapshot.catalogProducts
@@ -589,8 +634,12 @@ export function AdminDashboard() {
           />
           <OrderTable
             disabled={isSaving}
+            expandedOrderId={expandedOrderId}
             itemsByOrder={orderItemsByOrder}
-            onStatusChange={handleOrderStatus}
+            drafts={orderDrafts}
+            onDraftChange={setOrderDrafts}
+            onOrderSave={handleOrderSave}
+            onToggleExpanded={setExpandedOrderId}
             orders={filteredOrders}
           />
         </section>
@@ -631,12 +680,21 @@ export function AdminDashboard() {
             draft={newProductDraft}
             onChange={setNewProductDraft}
             onCreate={handleProductCreate}
+            onImageUpload={(file, field, onUploaded) => {
+              const productScope = normalizeProductId(
+                newProductDraft.productId || newProductDraft.name || "new-product",
+              );
+              void handleImageUpload(file, productScope, onUploaded);
+            }}
           />
           <ProductTable
             disabled={isSaving}
             drafts={productDrafts}
             onDraftChange={setProductDrafts}
             onDelete={handleProductDelete}
+            onImageUpload={(productId, file, _field, onUploaded) =>
+              handleImageUpload(file, productId, onUploaded)
+            }
             onPatch={handleProductPatch}
             onProductSave={handleProductSave}
             products={filteredProducts}
@@ -754,14 +812,22 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 function OrderTable({
+  drafts,
   disabled,
+  expandedOrderId,
   itemsByOrder,
-  onStatusChange,
+  onDraftChange,
+  onOrderSave,
+  onToggleExpanded,
   orders,
 }: {
+  drafts: Record<string, OrderDraft>;
   disabled: boolean;
+  expandedOrderId: string | null;
   itemsByOrder: Map<string, AdminSnapshot["orderItems"]>;
-  onStatusChange: (order: Order, status: OrderStatus) => void;
+  onDraftChange: Dispatch<SetStateAction<Record<string, OrderDraft>>>;
+  onOrderSave: (order: Order) => void;
+  onToggleExpanded: Dispatch<SetStateAction<string | null>>;
   orders: Order[];
 }) {
   if (orders.length === 0) {
@@ -778,43 +844,145 @@ function OrderTable({
             <th>Items</th>
             <th>Total</th>
             <th>Status</th>
-            <th>Date</th>
+            <th>Manage</th>
           </tr>
         </thead>
         <tbody>
           {orders.map((order) => {
             const items = itemsByOrder.get(order.id) ?? [];
+            const draft = drafts[order.id] ?? makeOrderDraft(order);
+            const isExpanded = expandedOrderId === order.id;
+            const updateDraft = (patch: Partial<OrderDraft>) =>
+              onDraftChange((current) => ({
+                ...current,
+                [order.id]: {
+                  ...draft,
+                  ...patch,
+                },
+              }));
 
             return (
-              <tr key={order.id}>
-                <td>
-                  <strong>{order.order_number}</strong>
-                  <span>{formatAddress(order.shipping_address)}</span>
-                </td>
-                <td>
-                  <strong>{order.customer_name}</strong>
-                  <span>{order.customer_email}</span>
-                </td>
-                <td>{items.length > 0 ? summarizeItems(items) : "No items"}</td>
-                <td>${formatPrice(Number(order.total))}</td>
-                <td>
-                  <select
-                    aria-label={`Status for ${order.order_number}`}
-                    disabled={disabled}
-                    value={order.status}
-                    onChange={(event) =>
-                      onStatusChange(order, event.target.value as OrderStatus)
-                    }
-                  >
-                    {orderStatuses.map((status) => (
-                      <option key={status.value} value={status.value}>
-                        {status.label}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>{formatDate(order.created_at)}</td>
-              </tr>
+              <Fragment key={order.id}>
+                <tr>
+                  <td>
+                    <strong>{order.order_number}</strong>
+                    <span>{formatDate(order.created_at)}</span>
+                    <span>{formatAddress(order.shipping_address)}</span>
+                  </td>
+                  <td>
+                    <strong>{order.customer_name}</strong>
+                    <span>{order.customer_email}</span>
+                    <span>{order.phone || "No phone"}</span>
+                  </td>
+                  <td>{items.length > 0 ? summarizeItems(items) : "No items"}</td>
+                  <td>
+                    <strong>${formatPrice(Number(order.total))}</strong>
+                    <span>{order.currency}</span>
+                  </td>
+                  <td>
+                    <select
+                      aria-label={`Status for ${order.order_number}`}
+                      disabled={disabled}
+                      value={draft.status}
+                      onChange={(event) =>
+                        updateDraft({ status: event.target.value as OrderStatus })
+                      }
+                    >
+                      {orderStatuses.map((status) => (
+                        <option key={status.value} value={status.value}>
+                          {status.label}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>
+                    <div className={styles.actionStack}>
+                      <button
+                        className={styles.tableButton}
+                        disabled={disabled}
+                        type="button"
+                        onClick={() => onOrderSave(order)}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className={styles.tableButton}
+                        disabled={disabled}
+                        type="button"
+                        aria-expanded={isExpanded}
+                        onClick={() =>
+                          onToggleExpanded((current) =>
+                            current === order.id ? null : order.id,
+                          )
+                        }
+                      >
+                        {isExpanded ? "Hide" : "Details"}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {isExpanded ? (
+                  <tr className={styles.orderDetailRow}>
+                    <td colSpan={6}>
+                      <div className={styles.orderDetailGrid}>
+                        <section aria-label={`${order.order_number} contact`}>
+                          <h3>Customer</h3>
+                          <p>{order.customer_name}</p>
+                          <a href={`mailto:${order.customer_email}`}>
+                            {order.customer_email}
+                          </a>
+                          <span>{order.phone || "No phone added"}</span>
+                        </section>
+                        <section aria-label={`${order.order_number} shipping`}>
+                          <h3>Shipping</h3>
+                          <p>{formatAddress(order.shipping_address)}</p>
+                          <span>{formatShippingDetails(order.shipping_address)}</span>
+                        </section>
+                        <label className={styles.orderNotes}>
+                          <span>Order notes</span>
+                          <textarea
+                            disabled={disabled}
+                            value={draft.notes}
+                            onChange={(event) => updateDraft({ notes: event.target.value })}
+                          />
+                        </label>
+                      </div>
+
+                      <div className={styles.orderItems}>
+                        {items.map((item) => (
+                          <article key={item.id}>
+                            <img
+                              src={assetPath(item.image)}
+                              alt=""
+                              width={72}
+                              height={72}
+                              loading="lazy"
+                            />
+                            <div>
+                              <strong>{item.name}</strong>
+                              <span>
+                                {item.variant_label} / {item.size} / Qty {item.quantity}
+                              </span>
+                            </div>
+                            <p>${formatPrice(Number(item.price) * item.quantity)}</p>
+                          </article>
+                        ))}
+                      </div>
+
+                      <div className={styles.orderDetailActions}>
+                        <button
+                          className={styles.tableButton}
+                          disabled={disabled}
+                          type="button"
+                          onClick={() => onOrderSave(order)}
+                        >
+                          Save order
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
             );
           })}
         </tbody>
@@ -828,11 +996,17 @@ function ProductCreateForm({
   draft,
   onChange,
   onCreate,
+  onImageUpload,
 }: {
   disabled: boolean;
   draft: NewProductDraft;
   onChange: Dispatch<SetStateAction<NewProductDraft>>;
   onCreate: () => void;
+  onImageUpload: (
+    file: File,
+    field: "detailHeroImage" | "image",
+    onUploaded: (publicUrl: string) => void,
+  ) => void;
 }) {
   return (
     <section className={styles.productForm} aria-labelledby="new-product-title">
@@ -884,11 +1058,16 @@ function ProductCreateForm({
           value={draft.price}
           onChange={(value) => onChange((current) => ({ ...current, price: value }))}
         />
-        <ProductTextField
+        <ProductImageField
           disabled={disabled}
           label="Main image"
           value={draft.image}
           onChange={(value) => onChange((current) => ({ ...current, image: value }))}
+          onUpload={(file) =>
+            onImageUpload(file, "image", (publicUrl) =>
+              onChange((current) => ({ ...current, image: publicUrl })),
+            )
+          }
         />
         <ProductTextField
           disabled={disabled}
@@ -968,6 +1147,29 @@ function ProductCreateForm({
           wrapperClassName={styles.productWideField}
           onChange={(value) => onChange((current) => ({ ...current, tags: value }))}
         />
+        <ProductImageField
+          disabled={disabled}
+          label="Detail hero image"
+          value={draft.detailHeroImage}
+          wrapperClassName={styles.productWideField}
+          onChange={(value) =>
+            onChange((current) => ({ ...current, detailHeroImage: value }))
+          }
+          onUpload={(file) =>
+            onImageUpload(file, "detailHeroImage", (publicUrl) =>
+              onChange((current) => ({ ...current, detailHeroImage: publicUrl })),
+            )
+          }
+        />
+        <ProductTextField
+          disabled={disabled}
+          label="Detail hero alt"
+          value={draft.detailHeroAlt}
+          wrapperClassName={styles.productWideField}
+          onChange={(value) =>
+            onChange((current) => ({ ...current, detailHeroAlt: value }))
+          }
+        />
       </div>
 
       <div className={styles.productFlags}>
@@ -1039,11 +1241,62 @@ function ProductTextField({
   );
 }
 
+function ProductImageField({
+  disabled,
+  label,
+  onChange,
+  onUpload,
+  value,
+  wrapperClassName,
+}: {
+  disabled: boolean;
+  label: string;
+  onChange: (value: string) => void;
+  onUpload: (file: File) => void;
+  value: string;
+  wrapperClassName?: string;
+}) {
+  return (
+    <label className={wrapperClassName}>
+      <span>{label}</span>
+      <div className={styles.imageInputGroup}>
+        <input
+          disabled={disabled}
+          type="text"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        <input
+          accept="image/gif,image/jpeg,image/png,image/webp"
+          disabled={disabled}
+          type="file"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.currentTarget.value = "";
+            if (file) onUpload(file);
+          }}
+        />
+      </div>
+      {value ? (
+        <img
+          className={styles.imagePreview}
+          src={assetPath(value)}
+          alt=""
+          width={104}
+          height={104}
+          loading="lazy"
+        />
+      ) : null}
+    </label>
+  );
+}
+
 function ProductTable({
   disabled,
   drafts,
   onDraftChange,
   onDelete,
+  onImageUpload,
   onPatch,
   onProductSave,
   products,
@@ -1052,6 +1305,12 @@ function ProductTable({
   drafts: Record<string, ProductDraft>;
   onDraftChange: Dispatch<SetStateAction<Record<string, ProductDraft>>>;
   onDelete: (productId: string, name: string) => void;
+  onImageUpload: (
+    productId: string,
+    file: File,
+    field: "detailHeroImage" | "image",
+    onUploaded: (publicUrl: string) => void,
+  ) => void;
   onPatch: (
     productId: string,
     patch: {
@@ -1245,11 +1504,16 @@ function ProductTable({
                           ))}
                         </select>
                       </label>
-                      <ProductTextField
+                      <ProductImageField
                         disabled={disabled}
                         label="Main image"
                         value={draft.image}
                         onChange={(value) => updateDraft({ image: value })}
+                        onUpload={(file) =>
+                          onImageUpload(product.product_id, file, "image", (publicUrl) =>
+                            updateDraft({ image: publicUrl }),
+                          )
+                        }
                       />
                       <ProductTextField
                         disabled={disabled}
@@ -1281,11 +1545,19 @@ function ProductTable({
                         value={draft.tags}
                         onChange={(value) => updateDraft({ tags: value })}
                       />
-                      <ProductTextField
+                      <ProductImageField
                         disabled={disabled}
                         label="Detail hero image"
                         value={draft.detailHeroImage}
                         onChange={(value) => updateDraft({ detailHeroImage: value })}
+                        onUpload={(file) =>
+                          onImageUpload(
+                            product.product_id,
+                            file,
+                            "detailHeroImage",
+                            (publicUrl) => updateDraft({ detailHeroImage: publicUrl }),
+                          )
+                        }
                       />
                       <ProductTextField
                         disabled={disabled}
@@ -1405,6 +1677,17 @@ function CustomerTable({
       </table>
     </div>
   );
+}
+
+function makeOrderDrafts(orders: Order[]) {
+  return Object.fromEntries(orders.map((order) => [order.id, makeOrderDraft(order)]));
+}
+
+function makeOrderDraft(order: Order): OrderDraft {
+  return {
+    notes: order.notes ?? "",
+    status: order.status as OrderStatus,
+  };
 }
 
 function makeProductDrafts(products: AdminSnapshot["catalogProducts"]) {
@@ -1580,4 +1863,24 @@ function formatAddress(address: Json) {
   return [value.addressLine1, value.city, value.country]
     .filter((part): part is string => typeof part === "string" && part.length > 0)
     .join(", ");
+}
+
+function formatShippingDetails(address: Json) {
+  if (!address || typeof address !== "object" || Array.isArray(address)) {
+    return "No structured shipping details.";
+  }
+
+  return Object.entries(address as Record<string, Json>)
+    .map(([key, value]) => {
+      if (typeof value !== "string" || value.length === 0) return "";
+      return `${formatAddressKey(key)}: ${value}`;
+    })
+    .filter(Boolean)
+    .join(" / ");
+}
+
+function formatAddressKey(key: string) {
+  return key
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^./, (character) => character.toUpperCase());
 }
