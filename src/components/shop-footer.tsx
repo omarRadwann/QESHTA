@@ -4,19 +4,37 @@ import styles from "./shop-footer.module.css";
 const footerGroups = [
   {
     title: "Shop",
-    links: ["Shoes", "Bags", "Clothing", "New in"],
+    links: [
+      { label: "Shoes", href: "/shop/" },
+      { label: "Bags", href: "/shop/" },
+      { label: "Clothing", href: "/shop/" },
+      { label: "New in", href: "/shop/" },
+    ],
   },
   {
     title: "Company",
-    links: ["About Us", "Loyalty Program", "Contact Us", "The Journal"],
+    links: [
+      { label: "About Us", href: "/#story" },
+      { label: "Loyalty Program", href: "/account/" },
+      { label: "Contact Us", href: "/privacy-policy/#contact" },
+      { label: "The Journal", href: "/#journal" },
+    ],
   },
   {
     title: "Support",
-    links: ["Warranty & Exchange", "FAQ", "Payment & Delivery"],
+    links: [
+      { label: "Warranty & Exchange", href: "/privacy-policy/#returns" },
+      { label: "FAQ", href: "/privacy-policy/#faq" },
+      { label: "Payment & Delivery", href: "/privacy-policy/#orders" },
+    ],
   },
   {
     title: "Social",
-    links: ["TikTok", "Instagram", "Pinterest"],
+    links: [
+      { label: "TikTok", href: "/shop/" },
+      { label: "Instagram", href: "/shop/" },
+      { label: "Pinterest", href: "/shop/" },
+    ],
   },
 ];
 
@@ -28,8 +46,8 @@ export function ShopFooter() {
           <nav key={group.title} aria-label={group.title}>
             <h2>{group.title}</h2>
             {group.links.map((link) => (
-              <Link key={link} href="/shop/">
-                {link}
+              <Link key={link.label} href={link.href}>
+                {link.label}
               </Link>
             ))}
           </nav>
@@ -51,8 +69,8 @@ export function ShopFooter() {
       <p className={styles.wordmark}>QESHTA<sup>TM</sup></p>
 
       <div className={styles.legal}>
-        <Link href="/">Privacy Policy</Link>
-        <Link href="/">Terms & Conditions</Link>
+        <Link href="/privacy-policy/">Privacy Policy</Link>
+        <Link href="/privacy-policy/#terms">Terms & Conditions</Link>
       </div>
     </footer>
   );

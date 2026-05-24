@@ -5,7 +5,7 @@ import { siteConfig } from "@/lib/site";
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date("2026-05-21");
+  const lastModified = new Date("2026-05-23");
 
   return [
     {
@@ -25,6 +25,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "weekly",
       priority: 0.6,
+    },
+    {
+      url: `${siteConfig.siteUrl}/privacy-policy/`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.4,
     },
     ...allProducts.map((product) => ({
       url: `${siteConfig.siteUrl}${getProductUrl(product)}`,

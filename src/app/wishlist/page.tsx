@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ShopFooter } from "@/components/shop-footer";
 import { SiteHeader } from "@/components/site-header";
 import { WishlistClient } from "@/components/wishlist-client";
 import { siteAssetUrl } from "@/lib/assets";
@@ -42,7 +41,6 @@ export default function WishlistPage() {
       <div className={styles.surface}>
         <SiteHeader variant="light" />
         <WishlistClient />
-        <ShopFooter />
       </div>
     </main>
   );

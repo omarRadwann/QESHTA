@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/json-ld";
 import { ShopCatalog } from "@/components/shop-catalog";
-import { ShopFooter } from "@/components/shop-footer";
 import { SiteHeader } from "@/components/site-header";
 import { productSchema, shopProducts } from "@/data/products";
 import { siteAssetUrl } from "@/lib/assets";
@@ -80,7 +79,6 @@ export default function ShopPage() {
           Shop QESHTA Spring 26 clothing, shoes, and accessories
         </h1>
         <ShopCatalog products={shopProducts} />
-        <ShopFooter />
       </div>
     </main>
   );

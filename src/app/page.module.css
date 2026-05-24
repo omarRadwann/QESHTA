@@ -131,6 +131,91 @@
   padding: 72px 24px 42px;
 }
 
+.bestsellerBanner {
+  background: #11100e;
+  min-height: 430px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bestsellerBanner img {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.88;
+  position: absolute;
+  width: 100%;
+}
+
+.bestsellerBanner div {
+  bottom: 42px;
+  color: #ffffff;
+  left: 24px;
+  max-width: 520px;
+  position: absolute;
+  z-index: 1;
+}
+
+.bestsellerBanner p,
+.sectionHeader p,
+.newsletterPanel p {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+
+.bestsellerBanner h2 {
+  font-size: clamp(2.2rem, 8vw, 7rem);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 0.9;
+  margin: 0;
+  max-width: 760px;
+  text-transform: uppercase;
+}
+
+.bestSellers {
+  background: #ffffff;
+  padding: 64px 24px 42px;
+}
+
+.sectionHeader {
+  align-items: end;
+  display: grid;
+  gap: 14px 24px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin: 0 0 34px;
+}
+
+.sectionHeader p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.sectionHeader h2 {
+  font-size: clamp(1.7rem, 5vw, 4.8rem);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 0.94;
+  margin: 0;
+  max-width: 760px;
+  text-transform: uppercase;
+}
+
+.sectionHeader a {
+  color: #050505;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-transform: uppercase;
+  text-underline-offset: 4px;
+  white-space: nowrap;
+}
+
 .selectedHeader {
   align-items: center;
   display: flex;
@@ -159,6 +244,65 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.newsletterPanel {
+  align-items: end;
+  background: #f3efe9;
+  display: grid;
+  gap: 32px;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 420px);
+  padding: 76px 24px;
+}
+
+.newsletterPanel h2 {
+  font-size: clamp(1.8rem, 5vw, 4.7rem);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 0.94;
+  margin: 0;
+  max-width: 780px;
+  text-transform: uppercase;
+}
+
+.newsletterForm {
+  display: grid;
+  gap: 8px;
+}
+
+.newsletterForm label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.newsletterForm div {
+  align-items: center;
+  border-bottom: 1px solid #050505;
+  display: flex;
+  gap: 14px;
+}
+
+.newsletterForm input {
+  background: transparent;
+  border: 0;
+  color: #050505;
+  flex: 1;
+  min-height: 44px;
+  min-width: 0;
+  outline: 0;
+}
+
+.newsletterForm button {
+  background: transparent;
+  border: 0;
+  color: #050505;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0;
+  text-transform: uppercase;
+}
+
 @media (max-width: 900px) {
   .canvas {
     width: 100%;
@@ -177,6 +321,16 @@
   .storyGrid,
   .productGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sectionHeader,
+  .newsletterPanel {
+    align-items: start;
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeader a {
+    justify-self: start;
   }
 }
 
@@ -214,6 +368,21 @@
   }
 
   .selected {
+    padding: 48px 16px 38px;
+  }
+
+  .bestsellerBanner {
+    min-height: 520px;
+  }
+
+  .bestsellerBanner div {
+    bottom: 34px;
+    left: 16px;
+    right: 16px;
+  }
+
+  .bestSellers,
+  .newsletterPanel {
     padding: 48px 16px 38px;
   }
 

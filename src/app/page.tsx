@@ -15,6 +15,9 @@ import { siteConfig } from "@/lib/site";
 import styles from "./page.module.css";
 
 export default function Home() {
+  const bestSellerProducts = allProducts
+    .filter((product) => product.featured || product.isNew)
+    .slice(0, 4);
   const structuredData = [
     {
       "@context": "https://schema.org",
@@ -116,6 +119,43 @@ export default function Home() {
           </div>
         </section>
 
+        <section className={styles.bestsellerBanner} aria-label="Best seller campaign">
+          <img
+            src={assetPath("/images/shop-editorial-banner.jpg")}
+            alt="QESHTA leather styling campaign with sculpted black accessories"
+            width={1600}
+            height={640}
+            decoding="async"
+            loading="lazy"
+          />
+          <div>
+            <p>Most wanted pieces</p>
+            <h2>Soft volume, sharper finish.</h2>
+          </div>
+        </section>
+
+        <section
+          id="best-sellers"
+          className={styles.bestSellers}
+          aria-labelledby="best-sellers-title"
+        >
+          <div className={styles.sectionHeader}>
+            <p>Best Seller</p>
+            <h2 id="best-sellers-title">The pieces everyone returns to</h2>
+            <Link href="/shop/">Shop Best Sellers</Link>
+          </div>
+
+          <div className={styles.productGrid}>
+            {bestSellerProducts.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                priority={index < 2}
+              />
+            ))}
+          </div>
+        </section>
+
         <section id="selected-products" className={styles.selected} aria-label="Selected products">
           <div className={styles.selectedHeader}>
             <h2>Selected products</h2>
@@ -135,6 +175,31 @@ export default function Home() {
               />
             ))}
           </div>
+        </section>
+
+        <section
+          id="newsletter"
+          className={styles.newsletterPanel}
+          aria-labelledby="newsletter-title"
+        >
+          <div>
+            <p>Private list</p>
+            <h2 id="newsletter-title">Collection notes, early access, and quiet sale alerts.</h2>
+          </div>
+
+          <form className={styles.newsletterForm}>
+            <label htmlFor="home-newsletter-email">Email</label>
+            <div>
+              <input
+                id="home-newsletter-email"
+                name="email"
+                type="email"
+                placeholder="Email"
+                required
+              />
+              <button type="submit">Join</button>
+            </div>
+          </form>
         </section>
       </div>
     </main>

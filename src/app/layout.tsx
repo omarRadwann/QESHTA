@@ -1,7 +1,16 @@
 import type { Metadata, Viewport } from "next";
+import { Barlow_Condensed } from "next/font/google";
+import { ShopFooter } from "@/components/shop-footer";
 import { assetPath, siteAssetUrl } from "@/lib/assets";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
+
+const qeshtaFont = Barlow_Condensed({
+  display: "swap",
+  subsets: ["latin"],
+  variable: "--font-qeshta",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
@@ -67,8 +76,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" className={`${qeshtaFont.variable} ${qeshtaFont.className}`}>
+      <body>
+        {children}
+        <ShopFooter />
+      </body>
     </html>
   );
 }

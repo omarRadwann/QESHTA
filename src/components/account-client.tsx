@@ -46,6 +46,7 @@ export function AccountClient() {
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [pendingConfirmationEmail, setPendingConfirmationEmail] = useState("");
 
   const saveProfile = useCallback(
     async (
@@ -210,8 +211,15 @@ export function AccountClient() {
           password,
         });
 
-        if (error) throw error;
+        if (error) {
+          if (isEmailNotConfirmedError(error.message)) {
+            setPendingConfirmationEmail(cleanEmail);
+          }
+          throw new Error(formatAuthErrorMessage(error.message));
+        }
+
         setPassword("");
+        setPendingConfirmationEmail("");
         setMessage("Signed in.");
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -221,16 +229,18 @@ export function AccountClient() {
             data: {
               full_name: signupName.trim(),
             },
+            emailRedirectTo: getAccountRedirectUrl(),
           },
         });
 
-        if (error) throw error;
+        if (error) throw new Error(formatAuthErrorMessage(error.message));
 
         setPassword("");
+        setPendingConfirmationEmail(data.session ? "" : cleanEmail);
         setMessage(
           data.session
             ? "Account created."
-            : "Account created. Check the email inbox to confirm access.",
+            : "Account created. Confirm your email, then sign in.",
         );
       }
     } catch (error) {
@@ -266,6 +276,44 @@ export function AccountClient() {
     } catch (error) {
       setIsSubmitting(false);
       setMessage(error instanceof Error ? error.message : "Google sign-in failed.");
+    }
+  }
+
+  async function handleResendConfirmation() {
+    if (!supabaseReady) {
+      setMessage("Account access is waiting for Supabase keys.");
+      return;
+    }
+
+    const cleanEmail = (pendingConfirmationEmail || email).trim().toLowerCase();
+    if (!cleanEmail) {
+      setMessage("Enter your email address first.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { error } = await supabase.auth.resend({
+        email: cleanEmail,
+        options: {
+          emailRedirectTo: getAccountRedirectUrl(),
+        },
+        type: "signup",
+      });
+
+      if (error) throw new Error(formatAuthErrorMessage(error.message));
+
+      setPendingConfirmationEmail(cleanEmail);
+      setMessage("Confirmation email sent. Check your inbox and spam folder.");
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Confirmation email could not be sent.",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -457,6 +505,12 @@ export function AccountClient() {
 
       <form className={styles.form} onSubmit={handleAuthSubmit}>
         {mode === "create-account" ? (
+          <p className={styles.authHint}>
+            New accounts need email confirmation before the first sign in.
+          </p>
+        ) : null}
+
+        {mode === "create-account" ? (
           <>
             <label htmlFor="account-name">Full name</label>
             <input
@@ -502,6 +556,17 @@ export function AccountClient() {
         </button>
       </form>
 
+      {pendingConfirmationEmail ? (
+        <div className={styles.confirmationBox}>
+          <p>
+            Waiting for confirmation on <strong>{pendingConfirmationEmail}</strong>.
+          </p>
+          <button type="button" disabled={isSubmitting} onClick={handleResendConfirmation}>
+            Resend Confirmation Email
+          </button>
+        </div>
+      ) : null}
+
       {message ? <p className={styles.statusMessage}>{message}</p> : null}
     </section>
   );
@@ -539,10 +604,12 @@ function OrderHistory({
                   <h3>{order.order_number}</h3>
                   <p>{formatDate(order.created_at)}</p>
                 </div>
-                <strong>${formatPrice(Number(order.total))}</strong>
+                <strong>EGP {formatPrice(Number(order.total))}</strong>
               </div>
               <div className={styles.orderDetails}>
-                <span>{formatOrderStatus(order.status)}</span>
+                <span className={styles.orderStatus} data-status={order.status}>
+                  {formatOrderStatus(order.status)}
+                </span>
                 <span>{formatAddress(order.shipping_address)}</span>
               </div>
               <p>{summarizeItems(order.items)}</p>
@@ -607,4 +674,20 @@ function getSessionDisplayName(activeSession: Session) {
   if (typeof metadata.name === "string") return metadata.name;
 
   return "";
+}
+
+function isEmailNotConfirmedError(message: string) {
+  return message.toLowerCase().includes("email not confirmed");
+}
+
+function formatAuthErrorMessage(message: string) {
+  if (isEmailNotConfirmedError(message)) {
+    return "Email not confirmed. Open the confirmation email first, or resend it below.";
+  }
+
+  if (message.toLowerCase().includes("invalid login credentials")) {
+    return "Invalid email or password. Check the account details and try again.";
+  }
+
+  return message;
 }

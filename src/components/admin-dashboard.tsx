@@ -558,7 +558,7 @@ export function AdminDashboard() {
       {activeView === "overview" ? (
         <>
           <div className={styles.metrics} aria-label="Store metrics">
-            <Metric label="Revenue" value={`$${formatPrice(metrics.revenue)}`} />
+            <Metric label="Revenue" value={`EGP ${formatPrice(metrics.revenue)}`} />
             <Metric label="Orders" value={String(metrics.orders)} />
             <Metric label="Pending" value={String(metrics.pending)} />
             <Metric label="Customers" value={String(metrics.customers)} />
@@ -876,12 +876,13 @@ function OrderTable({
                   </td>
                   <td>{items.length > 0 ? summarizeItems(items) : "No items"}</td>
                   <td>
-                    <strong>${formatPrice(Number(order.total))}</strong>
-                    <span>{order.currency}</span>
+                    <strong>EGP {formatPrice(Number(order.total))}</strong>
                   </td>
                   <td>
                     <select
                       aria-label={`Status for ${order.order_number}`}
+                      className={styles.statusSelect}
+                      data-status={draft.status}
                       disabled={disabled}
                       value={draft.status}
                       onChange={(event) =>
@@ -964,7 +965,7 @@ function OrderTable({
                                 {item.variant_label} / {item.size} / Qty {item.quantity}
                               </span>
                             </div>
-                            <p>${formatPrice(Number(item.price) * item.quantity)}</p>
+                            <p>EGP {formatPrice(Number(item.price) * item.quantity)}</p>
                           </article>
                         ))}
                       </div>
@@ -1369,7 +1370,7 @@ function ProductTable({
                       <div>
                         <strong>{product.name}</strong>
                         <span>
-                          {product.category} / ${formatPrice(Number(product.price))}
+                          {product.category} / EGP {formatPrice(Number(product.price))}
                         </span>
                         {!isLinked ? (
                           <span className={styles.warning}>Dynamic product route</span>
@@ -1391,6 +1392,8 @@ function ProductTable({
                   <td>
                     <select
                       aria-label={`Status for ${product.name}`}
+                      className={styles.statusSelect}
+                      data-status={product.status}
                       disabled={disabled}
                       value={product.status}
                       onChange={(event) =>
