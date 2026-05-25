@@ -17,13 +17,34 @@ type WishlistButtonProps = {
   className?: string;
   activeLabel?: string;
   inactiveLabel?: string;
+  icon?: boolean;
 };
+
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M12 20.5 4.2 12.7a4.6 4.6 0 0 1 6.5-6.5l1.3 1.3 1.3-1.3a4.6 4.6 0 0 1 6.5 6.5z" />
+    </svg>
+  );
+}
 
 export function WishlistButton({
   productId,
   className,
   activeLabel = "Saved",
   inactiveLabel = "Wishlist",
+  icon = false,
 }: WishlistButtonProps) {
   const [active, setActive] = useState(false);
   const [syncState, setSyncState] = useState<"idle" | "syncing" | "error">("idle");
@@ -75,7 +96,7 @@ export function WishlistButton({
       title={syncState === "error" ? "Saved on this device. Sign in again to sync." : undefined}
       onClick={handleToggle}
     >
-      {active ? activeLabel : inactiveLabel}
+      {icon ? <HeartIcon filled={active} /> : active ? activeLabel : inactiveLabel}
     </button>
   );
 }

@@ -3,8 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #050505;
-  --font-qeshta: "Avenir Next Condensed", "Avenir Next", "Arial Narrow", Arial,
-    sans-serif;
+  --font-qeshta: var(--font-barlow), "Avenir Next Condensed", "Avenir Next",
+    "Arial Narrow", Arial, sans-serif;
 }
 
 *,

@@ -70,17 +70,15 @@
 }
 
 .wordmark {
-  font-size: clamp(5rem, 17vw, 17rem);
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: 0.85;
-  margin: 56px 0 22px;
-  text-align: center;
+  display: block;
+  margin: 56px auto 22px;
+  width: min(88%, 880px);
 }
 
-.wordmark sup {
-  font-size: 0.12em;
-  top: -0.55em;
+.wordmark img {
+  display: block;
+  height: auto;
+  width: 100%;
 }
 
 .legal {

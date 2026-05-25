@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
 export const PRODUCT_IMAGE_BUCKET = "qeshta-product-images";
+export const CONTENT_IMAGE_BUCKET = "qeshta-content-images";
 const maxImageSize = 10 * 1024 * 1024;
 const allowedImageTypes = new Set([
   "image/gif",
@@ -45,6 +46,38 @@ export async function uploadProductImage(
   if (error) throw error;
 
   const { data } = supabase.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+export async function uploadContentImage(
+  supabase: SupabaseClient<Database>,
+  file: File,
+  slot: string,
+) {
+  if (!allowedImageTypes.has(file.type)) {
+    throw new Error("Upload a JPG, PNG, WebP, or GIF image.");
+  }
+
+  if (file.size > maxImageSize) {
+    throw new Error("Banner images must be 10MB or smaller.");
+  }
+
+  const extension = getFileExtension(file);
+  const safeSlot = sanitizeStorageSegment(slot) || "banner";
+  const safeName = sanitizeStorageSegment(file.name.replace(/\.[^.]+$/, "")) || "image";
+  const path = `${safeSlot}/${Date.now()}-${safeName}.${extension}`;
+
+  const { error } = await supabase.storage
+    .from(CONTENT_IMAGE_BUCKET)
+    .upload(path, file, {
+      cacheControl: "31536000",
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage.from(CONTENT_IMAGE_BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }
 

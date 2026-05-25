@@ -98,12 +98,14 @@ export type Database = {
           category: string
           collection: string
           color: string | null
+          color_hex: string | null
           created_at: string
           description: string | null
           detail_hero_alt: string | null
           detail_hero_image: string | null
           detail_tabs: Json | null
           featured: boolean
+          gender: string
           image: string
           inventory_quantity: number
           is_new: boolean
@@ -123,12 +125,14 @@ export type Database = {
           category: string
           collection?: string
           color?: string | null
+          color_hex?: string | null
           created_at?: string
           description?: string | null
           detail_hero_alt?: string | null
           detail_hero_image?: string | null
           detail_tabs?: Json | null
           featured?: boolean
+          gender?: string
           image: string
           inventory_quantity?: number
           is_new?: boolean
@@ -148,12 +152,14 @@ export type Database = {
           category?: string
           collection?: string
           color?: string | null
+          color_hex?: string | null
           created_at?: string
           description?: string | null
           detail_hero_alt?: string | null
           detail_hero_image?: string | null
           detail_tabs?: Json | null
           featured?: boolean
+          gender?: string
           image?: string
           inventory_quantity?: number
           is_new?: boolean
@@ -168,6 +174,86 @@ export type Database = {
           variants?: Json | null
         }
         Relationships: []
+      }
+      content_banners: {
+        Row: {
+          created_at: string
+          cta_href: string | null
+          cta_label: string | null
+          eyebrow: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          slot: string
+          sort_order: number
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cta_href?: string | null
+          cta_label?: string | null
+          eyebrow?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          slot: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cta_href?: string | null
+          cta_label?: string | null
+          eyebrow?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          slot?: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      homepage_products: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          product_id: string
+          slot: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          product_id: string
+          slot: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          product_id?: string
+          slot?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homepage_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["product_id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -497,6 +583,13 @@ export type OrderUpdate = TablesUpdate<"orders">
 export type OrderItem = Tables<"order_items">
 export type OrderInsert = TablesInsert<"orders">
 export type OrderItemInsert = TablesInsert<"order_items">
+export type ContentBanner = Tables<"content_banners">
+export type ContentBannerInsert = TablesInsert<"content_banners">
+export type ContentBannerUpdate = TablesUpdate<"content_banners">
+export type HomepageProduct = Tables<"homepage_products">
+export type HomepageProductInsert = TablesInsert<"homepage_products">
+export type HomepageProductUpdate = TablesUpdate<"homepage_products">
 export type AccountRole = "customer" | "admin"
 export type OrderStatus = "pending_review" | "paid" | "fulfilled" | "cancelled"
 export type CatalogProductStatus = "active" | "draft" | "archived"
+export type ProductGender = "Women" | "Men" | "Unisex"

@@ -25,6 +25,10 @@ export const productSizes = ["XS", "S", "M", "L", "XL"] as const;
 
 export type ProductSize = (typeof productSizes)[number];
 
+export const productGenders = ["Women", "Men", "Unisex"] as const;
+
+export type ProductGender = (typeof productGenders)[number];
+
 export type ProductDetailTab = {
   id: "description" | "size-fit" | "material" | "care";
   label: string;
@@ -49,6 +53,8 @@ export type Product = {
   alt: string;
   category: Exclude<ShopCategory, "View All">;
   color: string;
+  colorHex?: string;
+  gender?: ProductGender;
   material: string;
   collection: string;
   description: string;
@@ -424,9 +430,10 @@ export const selectedProducts = selectedIds
 export const allProducts = [...shopProducts, moonRoseEarrings];
 
 export function formatPrice(price: number) {
-  return new Intl.NumberFormat("en-US", {
+  const amount = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
   }).format(price);
+  return `${amount} ${siteConfig.currency}`;
 }
 
 export function getProductUrl(product: Product) {
@@ -439,6 +446,25 @@ export function getProductUrl(product: Product) {
 
 export function getProductById(id: string) {
   return allProducts.find((product) => product.id === id);
+}
+
+export function getRelatedProducts(product: Product, limit = 4): Product[] {
+  const pool = shopProducts.filter((item) => item.id !== product.id);
+  const result: Product[] = pool.filter((item) => item.category === product.category);
+
+  if (result.length < limit) {
+    const tagSet = new Set(product.tags);
+    const byTag = pool.filter(
+      (item) => !result.includes(item) && item.tags.some((tag) => tagSet.has(tag)),
+    );
+    result.push(...byTag);
+  }
+
+  if (result.length < limit) {
+    result.push(...pool.filter((item) => !result.includes(item)));
+  }
+
+  return result.slice(0, limit);
 }
 
 export function getProductTabs(product: Product): ProductDetailTab[] {

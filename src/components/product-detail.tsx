@@ -180,7 +180,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
         <div className={styles.metaRow}>
           <div>
             <h1 id="product-title">{displayProduct.name}</h1>
-            <p>${formatPrice(displayPrice)}</p>
+            <p>{formatPrice(displayPrice)}</p>
           </div>
           {displayProduct.isNew ? <span>New</span> : null}
         </div>

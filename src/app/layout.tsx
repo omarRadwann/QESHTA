@@ -8,7 +8,7 @@ import "./globals.css";
 const qeshtaFont = Barlow_Condensed({
   display: "swap",
   subsets: ["latin"],
-  variable: "--font-qeshta",
+  variable: "--font-barlow",
   weight: ["400", "500", "600", "700", "800"],
 });
 
@@ -76,7 +76,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${qeshtaFont.variable} ${qeshtaFont.className}`}>
+    <html lang="en" className={qeshtaFont.variable}>
       <body>
         {children}
         <ShopFooter />

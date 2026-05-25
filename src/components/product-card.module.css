@@ -11,6 +11,7 @@
 .imageFrame {
   aspect-ratio: 1;
   background: #f5f3f0;
+  background: color-mix(in srgb, var(--card-tint, #f5f3f0) 16%, #f5f3f0);
   display: block;
   overflow: hidden;
   position: relative;
@@ -41,28 +42,76 @@
   z-index: 1;
 }
 
-.wishlistButton {
-  background: rgb(255 255 255 / 88%);
-  border: 1px solid transparent;
-  color: #050505;
-  cursor: pointer;
-  font-size: 0.66rem;
-  font-weight: 800;
-  line-height: 1;
-  min-height: 30px;
-  padding: 0 10px;
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   position: absolute;
   right: 10px;
-  text-transform: uppercase;
   top: 10px;
-  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
   z-index: 2;
 }
 
-.wishlistButton[aria-pressed="true"] {
+.actionButton {
+  align-items: center;
+  background: rgb(255 255 255 / 88%);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #050505;
+  cursor: pointer;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 160ms ease, border-color 160ms ease,
+    color 160ms ease, transform 160ms ease;
+  width: 34px;
+}
+
+.actionButton svg {
+  display: block;
+  height: 16px;
+  width: 16px;
+}
+
+.actionButton[aria-pressed="true"] {
   background: #050505;
   border-color: #050505;
   color: #ffffff;
+}
+
+.sizes {
+  background: linear-gradient(
+    to top,
+    rgb(245 243 240 / 96%),
+    rgb(245 243 240 / 0%)
+  );
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  left: 0;
+  opacity: 0;
+  padding: 26px 8px 10px;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  transform: translateY(8px);
+  transition: opacity 200ms ease, transform 200ms ease;
+  z-index: 1;
+}
+
+.sizes span {
+  background: rgb(255 255 255 / 82%);
+  border: 1px solid rgb(5 5 5 / 24%);
+  color: #050505;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  padding: 4px 7px;
+  text-transform: uppercase;
 }
 
 .card h3,
@@ -105,7 +154,13 @@
     transform: scale(1.025);
   }
 
-  .wishlistButton:hover {
+  .card:hover .sizes,
+  .compactCard:hover .sizes {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .actionButton:hover {
     border-color: #050505;
     transform: translateY(-1px);
   }

@@ -5,8 +5,13 @@ import type {
   CatalogProductInsert,
   CatalogProductStatus,
   CatalogProductUpdate,
+  ContentBanner,
+  ContentBannerInsert,
+  ContentBannerUpdate,
   CustomerProfile,
   Database,
+  HomepageProduct,
+  HomepageProductInsert,
   Order,
   OrderItem,
   OrderUpdate,
@@ -14,7 +19,9 @@ import type {
 } from "./types";
 
 export type AdminSnapshot = {
+  banners: ContentBanner[];
   catalogProducts: CatalogProduct[];
+  homepageProducts: HomepageProduct[];
   orderItems: OrderItem[];
   orders: Order[];
   profiles: CustomerProfile[];
@@ -63,15 +70,28 @@ export async function getAdminAccess(
 export async function fetchAdminSnapshot(
   supabase: SupabaseClient<Database>,
 ): Promise<AdminSnapshot> {
-  const [catalogResult, ordersResult, profilesResult] = await Promise.all([
-    supabase.from("catalog_products").select("*").order("name", { ascending: true }),
-    supabase.from("orders").select("*").order("created_at", { ascending: false }),
-    supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-  ]);
+  const [catalogResult, ordersResult, profilesResult, bannersResult, homepageResult] =
+    await Promise.all([
+      supabase.from("catalog_products").select("*").order("name", { ascending: true }),
+      supabase.from("orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+      supabase
+        .from("content_banners")
+        .select("*")
+        .order("slot", { ascending: true })
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("homepage_products")
+        .select("*")
+        .order("slot", { ascending: true })
+        .order("sort_order", { ascending: true }),
+    ]);
 
   if (catalogResult.error) throw catalogResult.error;
   if (ordersResult.error) throw ordersResult.error;
   if (profilesResult.error) throw profilesResult.error;
+  if (bannersResult.error) throw bannersResult.error;
+  if (homepageResult.error) throw homepageResult.error;
 
   const orderIds = ordersResult.data.map((order) => order.id);
   const orderItemsResult =
@@ -86,7 +106,9 @@ export async function fetchAdminSnapshot(
   if (orderItemsResult.error) throw orderItemsResult.error;
 
   return {
+    banners: bannersResult.data,
     catalogProducts: catalogResult.data,
+    homepageProducts: homepageResult.data,
     orderItems: orderItemsResult.data,
     orders: ordersResult.data,
     profiles: profilesResult.data,
@@ -127,11 +149,13 @@ export async function updateCatalogProduct(
     | "category"
     | "collection"
     | "color"
+    | "color_hex"
     | "description"
     | "detail_hero_alt"
     | "detail_hero_image"
     | "detail_tabs"
     | "featured"
+    | "gender"
     | "image"
     | "inventory_quantity"
     | "is_new"
@@ -186,5 +210,76 @@ export async function updateCustomerRole(
     p_role: role,
   });
 
+  if (error) throw error;
+}
+
+// --- Content banners ---------------------------------------------------------
+
+export const bannerSlots: { label: string; value: string }[] = [
+  { label: "Shop page banner", value: "shop_top" },
+  { label: "Home hero", value: "home_hero" },
+  { label: "Home best-seller banner", value: "home_bestseller" },
+];
+
+export async function createBanner(
+  supabase: SupabaseClient<Database>,
+  banner: ContentBannerInsert,
+) {
+  const { error } = await supabase.from("content_banners").insert(banner);
+  if (error) throw error;
+}
+
+export async function updateBanner(
+  supabase: SupabaseClient<Database>,
+  id: string,
+  patch: ContentBannerUpdate,
+) {
+  const { error } = await supabase
+    .from("content_banners")
+    .update(patch)
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteBanner(supabase: SupabaseClient<Database>, id: string) {
+  const { error } = await supabase.from("content_banners").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// --- Homepage product curation ----------------------------------------------
+
+export const homepageSlots: { label: string; value: string }[] = [
+  { label: "Selected products (carousel)", value: "selected" },
+  { label: "Best sellers", value: "bestseller" },
+  { label: "Featured", value: "featured" },
+];
+
+export async function addHomepageProduct(
+  supabase: SupabaseClient<Database>,
+  row: HomepageProductInsert,
+) {
+  const { error } = await supabase
+    .from("homepage_products")
+    .upsert(row, { onConflict: "slot,product_id" });
+  if (error) throw error;
+}
+
+export async function updateHomepageProduct(
+  supabase: SupabaseClient<Database>,
+  id: string,
+  patch: { sort_order?: number; is_active?: boolean },
+) {
+  const { error } = await supabase
+    .from("homepage_products")
+    .update(patch)
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function removeHomepageProduct(
+  supabase: SupabaseClient<Database>,
+  id: string,
+) {
+  const { error } = await supabase.from("homepage_products").delete().eq("id", id);
   if (error) throw error;
 }

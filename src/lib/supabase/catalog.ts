@@ -2,10 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   Product,
   ProductDetailTab,
+  ProductGender,
   ProductVariant,
   ShopCategory,
 } from "@/data/products";
-import type { CatalogProduct, Database } from "./types";
+import type { CatalogProduct, ContentBanner, Database } from "./types";
 
 export type PublicCatalogProduct = Pick<
   CatalogProduct,
@@ -29,7 +30,7 @@ export type ProductAvailability = {
 };
 
 const catalogProductColumns =
-  "allow_backorder, alt, category, collection, color, created_at, description, detail_hero_alt, detail_hero_image, detail_tabs, featured, image, inventory_quantity, is_new, low_stock_threshold, material, name, price, product_id, status, tags, updated_at, variants";
+  "allow_backorder, alt, category, collection, color, color_hex, created_at, description, detail_hero_alt, detail_hero_image, detail_tabs, featured, gender, image, inventory_quantity, is_new, low_stock_threshold, material, name, price, product_id, status, tags, updated_at, variants";
 
 export async function fetchPublicCatalog(
   supabase: SupabaseClient<Database>,
@@ -73,6 +74,43 @@ export async function fetchCatalogProductById(
   return data;
 }
 
+export async function fetchHomepageProducts(
+  supabase: SupabaseClient<Database>,
+  slot: string,
+): Promise<CatalogProduct[]> {
+  const { data, error } = await supabase
+    .from("homepage_products")
+    .select(`sort_order, catalog_products(${catalogProductColumns})`)
+    .eq("slot", slot)
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error) throw error;
+
+  const rows = (data ?? []) as unknown as Array<{
+    catalog_products: CatalogProduct | null;
+  }>;
+
+  return rows
+    .map((row) => row.catalog_products)
+    .filter((product): product is CatalogProduct => Boolean(product));
+}
+
+export async function fetchBannersBySlot(
+  supabase: SupabaseClient<Database>,
+  slot: string,
+): Promise<ContentBanner[]> {
+  const { data, error } = await supabase
+    .from("content_banners")
+    .select("*")
+    .eq("slot", slot)
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function fetchProductAvailability(
   supabase: SupabaseClient<Database>,
   productId: string,
@@ -114,6 +152,8 @@ export function catalogProductToProduct(
     alt: product.alt?.trim() || fallback?.alt || product.name,
     category,
     color: product.color?.trim() || fallback?.color || "Core",
+    colorHex: product.color_hex?.trim() || fallback?.colorHex || undefined,
+    gender: normalizeGender(product.gender, fallback?.gender),
     material: product.material?.trim() || fallback?.material || "Mixed material",
     collection: product.collection || fallback?.collection || "Spring 26",
     description,
@@ -162,6 +202,16 @@ function normalizeCategory(
   return allowed.includes(category as Exclude<ShopCategory, "View All">)
     ? (category as Exclude<ShopCategory, "View All">)
     : fallback ?? "Accessories";
+}
+
+function normalizeGender(
+  gender: string | null | undefined,
+  fallback?: ProductGender,
+): ProductGender {
+  const allowed: ProductGender[] = ["Women", "Men", "Unisex"];
+  return allowed.includes(gender as ProductGender)
+    ? (gender as ProductGender)
+    : fallback ?? "Women";
 }
 
 function parseDetailTabs(value: unknown, fallback?: ProductDetailTab[]) {

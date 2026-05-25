@@ -1,0 +1,39 @@
+.related {
+  background: #ffffff;
+  border-top: 1px solid #ece7df;
+  padding: 56px 24px 64px;
+}
+
+.header {
+  margin: 0 0 28px;
+}
+
+.header h2 {
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .related {
+    padding: 40px 16px 48px;
+  }
+
+  .grid {
+    gap: 14px 8px;
+  }
+}

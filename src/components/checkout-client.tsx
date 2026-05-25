@@ -279,14 +279,14 @@ export function CheckoutClient() {
                 <p>
                   {line.variantLabel} / {line.size} / Qty {line.quantity}
                 </p>
-                <strong>${formatPrice(line.price * line.quantity)}</strong>
+                <strong>{formatPrice(line.price * line.quantity)}</strong>
               </div>
             </article>
           ))}
         </div>
         <div className={styles.totalLine}>
           <span>Total</span>
-          <strong>${formatPrice(subtotal)}</strong>
+          <strong>{formatPrice(subtotal)}</strong>
         </div>
       </aside>
     </section>
