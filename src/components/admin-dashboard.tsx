@@ -15,18 +15,27 @@ import {
   allProducts,
   formatPrice,
   getProductById,
+  productGenders,
   shopCategories,
 } from "@/data/products";
 import { assetPath } from "@/lib/assets";
 import {
+  addHomepageProduct,
+  bannerSlots,
   catalogStatuses,
+  createBanner,
   createCatalogProduct,
+  deleteBanner,
   deleteCatalogProduct,
   fetchAdminSnapshot,
   getAdminAccess,
+  homepageSlots,
   orderStatuses,
+  removeHomepageProduct,
+  updateBanner,
   updateCatalogProduct,
   updateCustomerRole,
+  updateHomepageProduct,
   updateOrderManagement,
   type AdminSnapshot,
 } from "@/lib/supabase/admin";
@@ -34,28 +43,43 @@ import {
   getSupabaseBrowserClient,
   isSupabaseConfigured,
 } from "@/lib/supabase/client";
-import { uploadProductImage } from "@/lib/supabase/storage";
+import { uploadContentImage, uploadProductImage } from "@/lib/supabase/storage";
 import type {
   AccountRole,
   CatalogProductStatus,
+  ContentBanner,
   CustomerProfile,
+  HomepageProduct,
   Json,
   Order,
   OrderStatus,
 } from "@/lib/supabase/types";
 import styles from "./admin-dashboard.module.css";
 
-type AdminView = "overview" | "orders" | "products" | "customers";
+type AdminView = "overview" | "orders" | "products" | "content" | "customers";
 type AccessState = "booting" | "unconfigured" | "signed-out" | "denied" | "ready";
 type OrderDraft = {
   notes: string;
   status: OrderStatus;
+};
+type BannerDraft = {
+  slot: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  ctaLabel: string;
+  ctaHref: string;
+  isActive: boolean;
+  sortOrder: string;
 };
 type ProductDraft = {
   alt: string;
   category: string;
   collection: string;
   color: string;
+  colorHex: string;
+  gender: string;
   description: string;
   detailHeroAlt: string;
   detailHeroImage: string;
@@ -82,6 +106,7 @@ const views: { label: string; value: AdminView }[] = [
   { label: "Overview", value: "overview" },
   { label: "Orders", value: "orders" },
   { label: "Products", value: "products" },
+  { label: "Content", value: "content" },
   { label: "Customers", value: "customers" },
 ];
 
@@ -105,6 +130,8 @@ export function AdminDashboard() {
   const [newProductDraft, setNewProductDraft] = useState<NewProductDraft>(
     makeEmptyProductDraft,
   );
+  const [bannerDrafts, setBannerDrafts] = useState<Record<string, BannerDraft>>({});
+  const [newBannerDraft, setNewBannerDraft] = useState<BannerDraft>(makeEmptyBannerDraft);
   const [adminQuery, setAdminQuery] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState<"all" | OrderStatus>(
     "all",
@@ -155,6 +182,7 @@ export function AdminDashboard() {
         setSnapshot(nextSnapshot);
         setOrderDrafts(makeOrderDrafts(nextSnapshot.orders));
         setProductDrafts(makeProductDrafts(nextSnapshot.catalogProducts));
+        setBannerDrafts(makeBannerDrafts(nextSnapshot.banners));
         setAccessState("ready");
       } catch (error) {
         if (!isMounted) return;
@@ -290,6 +318,7 @@ export function AdminDashboard() {
     setSnapshot(nextSnapshot);
     setOrderDrafts(makeOrderDrafts(nextSnapshot.orders));
     setProductDrafts(makeProductDrafts(nextSnapshot.catalogProducts));
+    setBannerDrafts(makeBannerDrafts(nextSnapshot.banners));
     if (successMessage) setMessage(successMessage);
   }
 
@@ -456,6 +485,151 @@ export function AdminDashboard() {
     }
   }
 
+  async function handleBannerCreate() {
+    const payload = buildBannerPayload(newBannerDraft);
+    if ("error" in payload) {
+      setMessage(payload.error || "Banner details are invalid.");
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await createBanner(supabase, payload.value);
+      setNewBannerDraft(makeEmptyBannerDraft());
+      await refreshSnapshot("Banner created.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Banner create failed.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleBannerSave(id: string) {
+    const draft = bannerDrafts[id];
+    if (!draft) return;
+
+    const payload = buildBannerPayload(draft);
+    if ("error" in payload) {
+      setMessage(payload.error || "Banner details are invalid.");
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await updateBanner(supabase, id, payload.value);
+      await refreshSnapshot("Banner saved.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Banner update failed.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleBannerDelete(id: string) {
+    if (!window.confirm("Delete this banner?")) return;
+
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await deleteBanner(supabase, id);
+      await refreshSnapshot("Banner deleted.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Banner delete failed.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleBannerImageUpload(
+    file: File,
+    slot: string,
+    onUploaded: (url: string) => void,
+  ) {
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const url = await uploadContentImage(supabase, file, slot);
+      onUploaded(url);
+      setMessage("Image uploaded. Save the banner to publish it.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Image upload failed.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleAddHomepageProduct(slot: string, productId: string) {
+    if (!productId) return;
+
+    const existing = (snapshot?.homepageProducts ?? []).filter((row) => row.slot === slot);
+    if (existing.some((row) => row.product_id === productId)) {
+      setMessage("That product is already in this collection.");
+      return;
+    }
+    const nextOrder =
+      existing.reduce((max, row) => Math.max(max, row.sort_order), -1) + 1;
+
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await addHomepageProduct(supabase, {
+        slot,
+        product_id: productId,
+        sort_order: nextOrder,
+      });
+      await refreshSnapshot("Added to homepage collection.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not add product.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleHomepageProductPatch(
+    id: string,
+    patch: { sort_order?: number; is_active?: boolean },
+  ) {
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await updateHomepageProduct(supabase, id, patch);
+      await refreshSnapshot("Homepage collection updated.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Homepage update failed.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleRemoveHomepageProduct(id: string) {
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await removeHomepageProduct(supabase, id);
+      await refreshSnapshot("Removed from homepage collection.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not remove product.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   async function handleRoleChange(customer: CustomerProfile, role: AccountRole) {
     setIsSaving(true);
     setMessage("");
@@ -558,7 +732,7 @@ export function AdminDashboard() {
       {activeView === "overview" ? (
         <>
           <div className={styles.metrics} aria-label="Store metrics">
-            <Metric label="Revenue" value={`EGP ${formatPrice(metrics.revenue)}`} />
+            <Metric label="Revenue" value={formatPrice(metrics.revenue)} />
             <Metric label="Orders" value={String(metrics.orders)} />
             <Metric label="Pending" value={String(metrics.pending)} />
             <Metric label="Customers" value={String(metrics.customers)} />
@@ -698,6 +872,33 @@ export function AdminDashboard() {
             onPatch={handleProductPatch}
             onProductSave={handleProductSave}
             products={filteredProducts}
+          />
+        </section>
+      ) : null}
+
+      {activeView === "content" ? (
+        <section aria-labelledby="content-title">
+          <SectionHeading
+            title="Content & homepage"
+            id="content-title"
+            meta={`${snapshot.banners.length} banners`}
+          />
+          <ContentManager
+            banners={snapshot.banners}
+            bannerDrafts={bannerDrafts}
+            disabled={isSaving}
+            homepageProducts={snapshot.homepageProducts}
+            newBannerDraft={newBannerDraft}
+            products={snapshot.catalogProducts}
+            onAddHomepageProduct={handleAddHomepageProduct}
+            onBannerCreate={handleBannerCreate}
+            onBannerDelete={handleBannerDelete}
+            onBannerDraftChange={setBannerDrafts}
+            onBannerImageUpload={handleBannerImageUpload}
+            onBannerSave={handleBannerSave}
+            onHomepageProductPatch={handleHomepageProductPatch}
+            onNewBannerChange={setNewBannerDraft}
+            onRemoveHomepageProduct={handleRemoveHomepageProduct}
           />
         </section>
       ) : null}
@@ -876,7 +1077,7 @@ function OrderTable({
                   </td>
                   <td>{items.length > 0 ? summarizeItems(items) : "No items"}</td>
                   <td>
-                    <strong>EGP {formatPrice(Number(order.total))}</strong>
+                    <strong>{formatPrice(Number(order.total))}</strong>
                   </td>
                   <td>
                     <select
@@ -965,7 +1166,7 @@ function OrderTable({
                                 {item.variant_label} / {item.size} / Qty {item.quantity}
                               </span>
                             </div>
-                            <p>EGP {formatPrice(Number(item.price) * item.quantity)}</p>
+                            <p>{formatPrice(Number(item.price) * item.quantity)}</p>
                           </article>
                         ))}
                       </div>
@@ -1017,7 +1218,7 @@ function ProductCreateForm({
           <p>Create a live catalog item without touching code.</p>
         </div>
         <button type="button" disabled={disabled} onClick={onCreate}>
-          Add Product
+          {disabled ? "Working…" : "Add Product"}
         </button>
       </div>
 
@@ -1082,6 +1283,28 @@ function ProductCreateForm({
           value={draft.color}
           onChange={(value) => onChange((current) => ({ ...current, color: value }))}
         />
+        <ProductColorField
+          disabled={disabled}
+          label="Card swatch"
+          value={draft.colorHex}
+          onChange={(value) => onChange((current) => ({ ...current, colorHex: value }))}
+        />
+        <label>
+          <span>Gender</span>
+          <select
+            disabled={disabled}
+            value={draft.gender}
+            onChange={(event) =>
+              onChange((current) => ({ ...current, gender: event.target.value }))
+            }
+          >
+            {productGenders.map((gender) => (
+              <option key={gender} value={gender}>
+                {gender}
+              </option>
+            ))}
+          </select>
+        </label>
         <ProductTextField
           disabled={disabled}
           label="Material"
@@ -1292,6 +1515,46 @@ function ProductImageField({
   );
 }
 
+function ProductColorField({
+  disabled,
+  label,
+  onChange,
+  value,
+  wrapperClassName,
+}: {
+  disabled: boolean;
+  label: string;
+  onChange: (value: string) => void;
+  value: string;
+  wrapperClassName?: string;
+}) {
+  const swatch = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())
+    ? value.trim()
+    : "#cfc7ba";
+
+  return (
+    <label className={wrapperClassName}>
+      <span>{label}</span>
+      <div className={styles.colorInputGroup}>
+        <input
+          aria-label={`${label} color picker`}
+          disabled={disabled}
+          type="color"
+          value={swatch}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        <input
+          disabled={disabled}
+          placeholder="#000000 or blank"
+          type="text"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      </div>
+    </label>
+  );
+}
+
 function ProductTable({
   disabled,
   drafts,
@@ -1370,7 +1633,7 @@ function ProductTable({
                       <div>
                         <strong>{product.name}</strong>
                         <span>
-                          {product.category} / EGP {formatPrice(Number(product.price))}
+                          {product.category} / {formatPrice(Number(product.price))}
                         </span>
                         {!isLinked ? (
                           <span className={styles.warning}>Dynamic product route</span>
@@ -1530,6 +1793,26 @@ function ProductTable({
                         value={draft.color}
                         onChange={(value) => updateDraft({ color: value })}
                       />
+                      <ProductColorField
+                        disabled={disabled}
+                        label="Card swatch"
+                        value={draft.colorHex}
+                        onChange={(value) => updateDraft({ colorHex: value })}
+                      />
+                      <label>
+                        <span>Gender</span>
+                        <select
+                          disabled={disabled}
+                          value={draft.gender}
+                          onChange={(event) => updateDraft({ gender: event.target.value })}
+                        >
+                          {productGenders.map((gender) => (
+                            <option key={gender} value={gender}>
+                              {gender}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
                       <ProductTextField
                         disabled={disabled}
                         label="Material"
@@ -1682,6 +1965,337 @@ function CustomerTable({
   );
 }
 
+function ContentManager({
+  banners,
+  bannerDrafts,
+  disabled,
+  homepageProducts,
+  newBannerDraft,
+  products,
+  onAddHomepageProduct,
+  onBannerCreate,
+  onBannerDelete,
+  onBannerDraftChange,
+  onBannerImageUpload,
+  onBannerSave,
+  onHomepageProductPatch,
+  onNewBannerChange,
+  onRemoveHomepageProduct,
+}: {
+  banners: ContentBanner[];
+  bannerDrafts: Record<string, BannerDraft>;
+  disabled: boolean;
+  homepageProducts: HomepageProduct[];
+  newBannerDraft: BannerDraft;
+  products: AdminSnapshot["catalogProducts"];
+  onAddHomepageProduct: (slot: string, productId: string) => void;
+  onBannerCreate: () => void;
+  onBannerDelete: (id: string) => void;
+  onBannerDraftChange: Dispatch<SetStateAction<Record<string, BannerDraft>>>;
+  onBannerImageUpload: (file: File, slot: string, onUploaded: (url: string) => void) => void;
+  onBannerSave: (id: string) => void;
+  onHomepageProductPatch: (
+    id: string,
+    patch: { sort_order?: number; is_active?: boolean },
+  ) => void;
+  onNewBannerChange: Dispatch<SetStateAction<BannerDraft>>;
+  onRemoveHomepageProduct: (id: string) => void;
+}) {
+  const productOptions = [...products].sort((a, b) => a.name.localeCompare(b.name));
+
+  return (
+    <div className={styles.contentManager}>
+      <section className={styles.contentBlock} aria-label="Banners">
+        <div className={styles.contentBlockHeader}>
+          <h3>Banners</h3>
+          <p>Control the shop banner and hero blocks. Changes go live without a redeploy.</p>
+        </div>
+
+        <div className={styles.bannerCard}>
+          <h4>Add banner</h4>
+          <BannerFields
+            disabled={disabled}
+            draft={newBannerDraft}
+            onChange={(patch) => onNewBannerChange((current) => ({ ...current, ...patch }))}
+            onImageUpload={onBannerImageUpload}
+          />
+          <div className={styles.bannerActions}>
+            <button type="button" disabled={disabled} onClick={onBannerCreate}>
+              {disabled ? "Working…" : "Add banner"}
+            </button>
+          </div>
+        </div>
+
+        {banners.length === 0 ? (
+          <p className={styles.empty}>No banners yet.</p>
+        ) : (
+          banners.map((banner) => {
+            const draft = bannerDrafts[banner.id] ?? makeBannerDraft(banner);
+            const update = (patch: Partial<BannerDraft>) =>
+              onBannerDraftChange((current) => ({
+                ...current,
+                [banner.id]: { ...draft, ...patch },
+              }));
+
+            return (
+              <div key={banner.id} className={styles.bannerCard}>
+                <h4>
+                  {banner.title || "Untitled banner"}
+                  <span className={styles.bannerSlotTag}>{banner.slot}</span>
+                </h4>
+                <BannerFields
+                  disabled={disabled}
+                  draft={draft}
+                  onChange={update}
+                  onImageUpload={onBannerImageUpload}
+                />
+                <div className={styles.bannerActions}>
+                  <button
+                    className={styles.tableButton}
+                    disabled={disabled}
+                    type="button"
+                    onClick={() => onBannerSave(banner.id)}
+                  >
+                    Save
+                  </button>
+                  <button
+                    className={styles.dangerButton}
+                    disabled={disabled}
+                    type="button"
+                    onClick={() => onBannerDelete(banner.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </section>
+
+      <section className={styles.contentBlock} aria-label="Homepage collections">
+        <div className={styles.contentBlockHeader}>
+          <h3>Homepage collections</h3>
+          <p>Choose and order the products shown in each homepage section.</p>
+        </div>
+
+        {homepageSlots.map((slot) => {
+          const rows = homepageProducts
+            .filter((row) => row.slot === slot.value)
+            .sort((a, b) => a.sort_order - b.sort_order);
+
+          return (
+            <div key={slot.value} className={styles.curationBlock}>
+              <h4>{slot.label}</h4>
+              {rows.length === 0 ? (
+                <p className={styles.empty}>No products selected.</p>
+              ) : (
+                <ul className={styles.curationList}>
+                  {rows.map((row) => {
+                    const product = products.find((item) => item.product_id === row.product_id);
+
+                    return (
+                      <li key={row.id}>
+                        <span className={styles.curationName}>
+                          {product?.name ?? row.product_id}
+                        </span>
+                        <label className={styles.curationOrder}>
+                          <span>Order</span>
+                          <input
+                            key={row.sort_order}
+                            defaultValue={row.sort_order}
+                            disabled={disabled}
+                            min={0}
+                            type="number"
+                            onBlur={(event) => {
+                              const next = Number(event.target.value);
+                              if (Number.isInteger(next) && next !== row.sort_order) {
+                                onHomepageProductPatch(row.id, { sort_order: next });
+                              }
+                            }}
+                          />
+                        </label>
+                        <label className={styles.switchLabel}>
+                          <input
+                            checked={row.is_active}
+                            disabled={disabled}
+                            type="checkbox"
+                            onChange={(event) =>
+                              onHomepageProductPatch(row.id, { is_active: event.target.checked })
+                            }
+                          />
+                          Active
+                        </label>
+                        <button
+                          className={styles.dangerButton}
+                          disabled={disabled}
+                          type="button"
+                          onClick={() => onRemoveHomepageProduct(row.id)}
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              <AddCurationRow
+                disabled={disabled}
+                products={productOptions}
+                slot={slot.value}
+                onAdd={onAddHomepageProduct}
+              />
+            </div>
+          );
+        })}
+      </section>
+    </div>
+  );
+}
+
+function BannerFields({
+  disabled,
+  draft,
+  onChange,
+  onImageUpload,
+}: {
+  disabled: boolean;
+  draft: BannerDraft;
+  onChange: (patch: Partial<BannerDraft>) => void;
+  onImageUpload: (file: File, slot: string, onUploaded: (url: string) => void) => void;
+}) {
+  return (
+    <div className={styles.bannerGrid}>
+      <label>
+        <span>Slot</span>
+        <select
+          disabled={disabled}
+          value={draft.slot}
+          onChange={(event) => onChange({ slot: event.target.value })}
+        >
+          {bannerSlots.map((slot) => (
+            <option key={slot.value} value={slot.value}>
+              {slot.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span>Eyebrow</span>
+        <input
+          disabled={disabled}
+          value={draft.eyebrow}
+          onChange={(event) => onChange({ eyebrow: event.target.value })}
+        />
+      </label>
+      <label>
+        <span>Title</span>
+        <input
+          disabled={disabled}
+          value={draft.title}
+          onChange={(event) => onChange({ title: event.target.value })}
+        />
+      </label>
+      <label>
+        <span>Sort order</span>
+        <input
+          disabled={disabled}
+          min={0}
+          type="number"
+          value={draft.sortOrder}
+          onChange={(event) => onChange({ sortOrder: event.target.value })}
+        />
+      </label>
+      <label className={styles.productWideField}>
+        <span>Subtitle</span>
+        <textarea
+          disabled={disabled}
+          value={draft.subtitle}
+          onChange={(event) => onChange({ subtitle: event.target.value })}
+        />
+      </label>
+      <ProductImageField
+        disabled={disabled}
+        label="Banner image"
+        value={draft.imageUrl}
+        wrapperClassName={styles.productWideField}
+        onChange={(value) => onChange({ imageUrl: value })}
+        onUpload={(file) =>
+          onImageUpload(file, draft.slot, (url) => onChange({ imageUrl: url }))
+        }
+      />
+      <label>
+        <span>CTA label</span>
+        <input
+          disabled={disabled}
+          value={draft.ctaLabel}
+          onChange={(event) => onChange({ ctaLabel: event.target.value })}
+        />
+      </label>
+      <label>
+        <span>CTA link</span>
+        <input
+          disabled={disabled}
+          value={draft.ctaHref}
+          onChange={(event) => onChange({ ctaHref: event.target.value })}
+        />
+      </label>
+      <label className={styles.switchLabel}>
+        <input
+          checked={draft.isActive}
+          disabled={disabled}
+          type="checkbox"
+          onChange={(event) => onChange({ isActive: event.target.checked })}
+        />
+        Active
+      </label>
+    </div>
+  );
+}
+
+function AddCurationRow({
+  disabled,
+  products,
+  slot,
+  onAdd,
+}: {
+  disabled: boolean;
+  products: AdminSnapshot["catalogProducts"];
+  slot: string;
+  onAdd: (slot: string, productId: string) => void;
+}) {
+  const [selected, setSelected] = useState("");
+
+  return (
+    <div className={styles.curationAdd}>
+      <select
+        aria-label={`Add product to ${slot}`}
+        disabled={disabled}
+        value={selected}
+        onChange={(event) => setSelected(event.target.value)}
+      >
+        <option value="">Add a product…</option>
+        {products.map((product) => (
+          <option key={product.product_id} value={product.product_id}>
+            {product.name}
+          </option>
+        ))}
+      </select>
+      <button
+        className={styles.tableButton}
+        disabled={disabled || !selected}
+        type="button"
+        onClick={() => {
+          onAdd(slot, selected);
+          setSelected("");
+        }}
+      >
+        Add
+      </button>
+    </div>
+  );
+}
+
 function makeOrderDrafts(orders: Order[]) {
   return Object.fromEntries(orders.map((order) => [order.id, makeOrderDraft(order)]));
 }
@@ -1707,6 +2321,8 @@ function makeProductDraft(product: AdminSnapshot["catalogProducts"][number]): Pr
     category: product.category || fallback?.category || productCategoryOptions[0],
     collection: product.collection || fallback?.collection || "Spring 26",
     color: product.color ?? fallback?.color ?? "",
+    colorHex: product.color_hex ?? "",
+    gender: product.gender ?? fallback?.gender ?? "Women",
     description: product.description ?? fallback?.description ?? "",
     detailHeroAlt: product.detail_hero_alt ?? fallback?.detailHeroAlt ?? "",
     detailHeroImage: product.detail_hero_image ?? fallback?.detailHeroImage ?? "",
@@ -1730,6 +2346,8 @@ function makeEmptyProductDraft(): NewProductDraft {
     category: productCategoryOptions[0],
     collection: "Spring 26",
     color: "",
+    colorHex: "",
+    gender: "Women",
     description: "",
     detailHeroAlt: "",
     detailHeroImage: "",
@@ -1746,6 +2364,64 @@ function makeEmptyProductDraft(): NewProductDraft {
     status: "draft",
     tags: "",
     variantsJson: "",
+  };
+}
+
+function makeBannerDrafts(banners: ContentBanner[]) {
+  return Object.fromEntries(banners.map((banner) => [banner.id, makeBannerDraft(banner)]));
+}
+
+function makeBannerDraft(banner: ContentBanner): BannerDraft {
+  return {
+    slot: banner.slot,
+    eyebrow: banner.eyebrow ?? "",
+    title: banner.title ?? "",
+    subtitle: banner.subtitle ?? "",
+    imageUrl: banner.image_url ?? "",
+    ctaLabel: banner.cta_label ?? "",
+    ctaHref: banner.cta_href ?? "",
+    isActive: banner.is_active,
+    sortOrder: String(banner.sort_order),
+  };
+}
+
+function makeEmptyBannerDraft(): BannerDraft {
+  return {
+    slot: bannerSlots[0].value,
+    eyebrow: "",
+    title: "",
+    subtitle: "",
+    imageUrl: "",
+    ctaLabel: "",
+    ctaHref: "",
+    isActive: true,
+    sortOrder: "0",
+  };
+}
+
+function buildBannerPayload(draft: BannerDraft) {
+  const slot = draft.slot.trim();
+  if (!slot) {
+    return { error: "Choose a banner slot." };
+  }
+
+  const sortOrder = Number(draft.sortOrder);
+  if (!Number.isInteger(sortOrder) || sortOrder < 0) {
+    return { error: "Sort order must be a whole number of 0 or more." };
+  }
+
+  return {
+    value: {
+      slot,
+      eyebrow: nullIfBlank(draft.eyebrow),
+      title: nullIfBlank(draft.title),
+      subtitle: nullIfBlank(draft.subtitle),
+      image_url: nullIfBlank(draft.imageUrl),
+      cta_label: nullIfBlank(draft.ctaLabel),
+      cta_href: nullIfBlank(draft.ctaHref),
+      is_active: draft.isActive,
+      sort_order: sortOrder,
+    },
   };
 }
 
@@ -1790,6 +2466,8 @@ function buildProductPayloadFromDraft(draft: ProductDraft) {
       category,
       collection,
       color: nullIfBlank(draft.color),
+      color_hex: nullIfBlank(draft.colorHex),
+      gender: draft.gender || "Women",
       description,
       detail_hero_alt: nullIfBlank(draft.detailHeroAlt),
       detail_hero_image: nullIfBlank(draft.detailHeroImage),

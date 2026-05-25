@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
 import { ProductDetail } from "@/components/product-detail";
+import { RelatedProducts } from "@/components/related-products";
 import { SiteHeader } from "@/components/site-header";
 import {
   allProducts,
   getProductById,
   getProductUrl,
+  getRelatedProducts,
   productSchema,
   shopProducts,
 } from "@/data/products";
@@ -120,6 +122,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <div className={styles.surface}>
         <SiteHeader variant="light" />
         <ProductDetail product={product} />
+        <RelatedProducts products={getRelatedProducts(product)} />
       </div>
     </main>
   );

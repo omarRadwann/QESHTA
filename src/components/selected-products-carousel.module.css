@@ -1,0 +1,86 @@
+.section {
+  background: #ffffff;
+  padding: 72px 24px 42px;
+}
+
+.header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 34px;
+}
+
+.header h2 {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.pager {
+  align-items: center;
+  color: #050505;
+  display: flex;
+  font-size: 0.82rem;
+  gap: 9px;
+}
+
+.pager button {
+  background: transparent;
+  border: 0;
+  color: #050505;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+.pager button:disabled {
+  color: #b5b5b5;
+  cursor: default;
+}
+
+.pager button:not(:disabled):hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.track {
+  display: grid;
+  gap: 8px;
+  grid-auto-columns: calc((100% - 24px) / 4);
+  grid-auto-flow: column;
+  -ms-overflow-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  scroll-snap-align: start;
+}
+
+@media (max-width: 900px) {
+  .track {
+    grid-auto-columns: calc((100% - 8px) / 2);
+  }
+}
+
+@media (max-width: 760px) {
+  .section {
+    padding: 48px 16px 38px;
+  }
+}
+
+@media (max-width: 640px) {
+  .track {
+    grid-auto-columns: 86%;
+  }
+}

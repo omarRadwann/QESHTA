@@ -604,7 +604,7 @@ function OrderHistory({
                   <h3>{order.order_number}</h3>
                   <p>{formatDate(order.created_at)}</p>
                 </div>
-                <strong>EGP {formatPrice(Number(order.total))}</strong>
+                <strong>{formatPrice(Number(order.total))}</strong>
               </div>
               <div className={styles.orderDetails}>
                 <span className={styles.orderStatus} data-status={order.status}>

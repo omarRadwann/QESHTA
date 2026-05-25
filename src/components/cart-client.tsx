@@ -178,7 +178,7 @@ export function CartClient() {
               <p>
                 {line.variantLabel} / {line.size}
               </p>
-              <p>${formatPrice(line.price)}</p>
+              <p>{formatPrice(line.price)}</p>
             </div>
             <div className={styles.quantity}>
               <button
@@ -204,7 +204,7 @@ export function CartClient() {
       <div className={styles.summary}>
         <div>
           <span>Subtotal</span>
-          <strong>${formatPrice(subtotal)}</strong>
+          <strong>{formatPrice(subtotal)}</strong>
         </div>
         {syncMessage ? <p className={styles.syncMessage}>{syncMessage}</p> : null}
         <Link className={styles.checkoutLink} href="/checkout/">

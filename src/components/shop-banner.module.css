@@ -1,0 +1,77 @@
+.banner {
+  align-items: flex-end;
+  background: #11100e;
+  display: flex;
+  margin-bottom: 8px;
+  min-height: 340px;
+  overflow: hidden;
+  position: relative;
+}
+
+.banner img {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  opacity: 0.82;
+  position: absolute;
+  width: 100%;
+}
+
+.copy {
+  color: #ffffff;
+  max-width: 640px;
+  padding: 32px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
+.copy h2 {
+  font-size: clamp(1.9rem, 5vw, 4rem);
+  font-weight: 500;
+  line-height: 0.95;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+
+.sub {
+  font-size: 0.92rem;
+  line-height: 1.2;
+  margin: 0 0 18px;
+  max-width: 460px;
+  opacity: 0.92;
+}
+
+.cta {
+  border: 1px solid #ffffff;
+  color: #ffffff;
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 11px 20px;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.cta:hover {
+  background: #ffffff;
+  color: #050505;
+}
+
+@media (max-width: 760px) {
+  .banner {
+    min-height: 300px;
+  }
+
+  .copy {
+    padding: 24px 16px;
+  }
+}

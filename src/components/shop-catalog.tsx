@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { FilterDropdown } from "@/components/filter-dropdown";
 import { ProductCard } from "@/components/product-card";
 import { ShopEditorialBanner } from "@/components/shop-editorial-banner";
 import {
+  formatPrice,
   getProductUrl,
+  productGenders,
   shopCategories,
   shopSortOptions,
   type Product,
@@ -29,6 +32,7 @@ type ShopCatalogProps = {
 };
 
 const initialVisibleCount = 16;
+const priceCeilings = ["750", "1000", "1500", "2500"];
 
 function uniqueSorted(values: string[]) {
   return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
@@ -42,7 +46,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
   const [activeCategory, setActiveCategory] = useState<ShopCategory>("View All");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<ShopSort>("featured");
-  const [showFilters, setShowFilters] = useState(false);
+  const [genders, setGenders] = useState<string[]>([]);
   const [materials, setMaterials] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState("all");
@@ -109,6 +113,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
       const catalogMatch = availabilityMap ? Boolean(availabilityState) : true;
       const categoryMatch =
         activeCategory === "View All" || product.category === activeCategory;
+      const gender = product.gender ?? "Women";
       const queryMatch =
         normalizedQuery.length === 0 ||
         [
@@ -127,6 +132,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
         catalogMatch &&
         categoryMatch &&
         queryMatch &&
+        matchesSelected(gender, genders) &&
         matchesSelected(product.material, materials) &&
         matchesSelected(product.color, colors) &&
         displayPrice <= priceCeiling
@@ -146,6 +152,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
     activeCategory,
     availabilityMap,
     colors,
+    genders,
     materials,
     maxPrice,
     catalogProducts,
@@ -157,9 +164,12 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
   const hasActiveFilters =
     activeCategory !== "View All" ||
     query.trim().length > 0 ||
+    genders.length > 0 ||
     materials.length > 0 ||
     colors.length > 0 ||
     maxPrice !== "all";
+
+  const sortLabel = shopSortOptions.find((option) => option.value === sort)?.label;
 
   function resetVisibleCount() {
     setVisibleCount(initialVisibleCount);
@@ -174,6 +184,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
     setActiveCategory("View All");
     setQuery("");
     setSort("featured");
+    setGenders([]);
     setMaterials([]);
     setColors([]);
     setMaxPrice("all");
@@ -181,137 +192,136 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
   }
 
   return (
-    <section className={styles.catalog} aria-labelledby="shop-heading">
-      <div className={styles.headingRow}>
-        <p id="shop-heading">Spring 26</p>
-        <button
-          className={styles.filterToggle}
-          type="button"
-          aria-expanded={showFilters}
-          aria-controls="shop-filters"
-          onClick={() => setShowFilters((value) => !value)}
-        >
-          Filters
-        </button>
-      </div>
-
-      <div className={styles.searchRow}>
-        <label htmlFor="shop-search">Search</label>
-        <input
-          id="shop-search"
-          type="search"
-          value={query}
-          placeholder="Search"
-          onChange={(event) => {
-            setQuery(event.target.value);
-            resetVisibleCount();
-          }}
-        />
-
-        <label htmlFor="shop-sort">Sort</label>
-        <select
-          id="shop-sort"
-          value={sort}
-          onChange={(event) => {
-            setSort(event.target.value as ShopSort);
-            resetVisibleCount();
-          }}
-        >
-          {shopSortOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className={styles.categoryBar} aria-label="Product categories">
-        {shopCategories.map((category) => (
-          <button
-            key={category}
-            className={activeCategory === category ? styles.activeCategory : ""}
-            type="button"
-            onClick={() => {
-              setActiveCategory(category);
-              resetVisibleCount();
-            }}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
-
-      <div
-        id="shop-filters"
-        className={`${styles.filters} ${showFilters ? styles.filtersOpen : ""}`}
-      >
-        <fieldset>
-          <legend>Material</legend>
-          {materialOptions.map((material) => (
-            <label key={material}>
-              <input
-                type="checkbox"
-                checked={materials.includes(material)}
-                onChange={() => toggleListValue(material, materials, setMaterials)}
-              />
-              {material}
-            </label>
-          ))}
-        </fieldset>
-
-        <fieldset>
-          <legend>Color</legend>
-          {colorOptions.map((color) => (
-            <label key={color}>
-              <input
-                type="checkbox"
-                checked={colors.includes(color)}
-                onChange={() => toggleListValue(color, colors, setColors)}
-              />
-              {color}
-            </label>
-          ))}
-        </fieldset>
-
-        <fieldset>
-          <legend>Price</legend>
-          <label>
+    <section className={styles.catalog} aria-label="Shop catalog">
+      <div className={styles.toolbar}>
+        <div className={styles.toolbarRow}>
+          <div className={styles.search}>
+            <label htmlFor="shop-search">Search</label>
             <input
-              type="radio"
-              name="price"
-              checked={maxPrice === "all"}
-              onChange={() => {
-                setMaxPrice("all");
+              id="shop-search"
+              type="search"
+              value={query}
+              placeholder="Search the edit"
+              onChange={(event) => {
+                setQuery(event.target.value);
                 resetVisibleCount();
               }}
             />
-            All prices
-          </label>
-          {["750", "1000", "1500", "2500"].map((price) => (
-            <label key={price}>
+          </div>
+          <p className={styles.resultMeta} aria-live="polite">
+            {filteredProducts.length} product{filteredProducts.length === 1 ? "" : "s"}
+            {hasActiveFilters ? (
+              <button className={styles.clearButton} type="button" onClick={clearFilters}>
+                Clear all
+              </button>
+            ) : null}
+          </p>
+        </div>
+
+        <div className={styles.filterRow}>
+          <FilterDropdown label="Sort" summary={sort !== "featured" ? sortLabel : undefined}>
+            {shopSortOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`${styles.panelButton} ${sort === option.value ? styles.panelButtonActive : ""}`}
+                onClick={() => {
+                  setSort(option.value);
+                  resetVisibleCount();
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </FilterDropdown>
+
+          <FilterDropdown label="Gender" badge={genders.length || undefined}>
+            {productGenders.map((gender) => (
+              <label key={gender} className={styles.panelOption}>
+                <input
+                  type="checkbox"
+                  checked={genders.includes(gender)}
+                  onChange={() => toggleListValue(gender, genders, setGenders)}
+                />
+                {gender}
+              </label>
+            ))}
+          </FilterDropdown>
+
+          <FilterDropdown
+            label="Category"
+            summary={activeCategory !== "View All" ? activeCategory : undefined}
+          >
+            {shopCategories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={`${styles.panelButton} ${activeCategory === category ? styles.panelButtonActive : ""}`}
+                onClick={() => {
+                  setActiveCategory(category as ShopCategory);
+                  resetVisibleCount();
+                }}
+              >
+                {category}
+              </button>
+            ))}
+          </FilterDropdown>
+
+          <FilterDropdown label="Color" badge={colors.length || undefined}>
+            {colorOptions.map((color) => (
+              <label key={color} className={styles.panelOption}>
+                <input
+                  type="checkbox"
+                  checked={colors.includes(color)}
+                  onChange={() => toggleListValue(color, colors, setColors)}
+                />
+                {color}
+              </label>
+            ))}
+          </FilterDropdown>
+
+          <FilterDropdown label="Material" badge={materials.length || undefined}>
+            {materialOptions.map((material) => (
+              <label key={material} className={styles.panelOption}>
+                <input
+                  type="checkbox"
+                  checked={materials.includes(material)}
+                  onChange={() => toggleListValue(material, materials, setMaterials)}
+                />
+                {material}
+              </label>
+            ))}
+          </FilterDropdown>
+
+          <FilterDropdown label="Price" badge={maxPrice !== "all" ? 1 : undefined}>
+            <label className={styles.panelOption}>
               <input
                 type="radio"
                 name="price"
-                checked={maxPrice === price}
+                checked={maxPrice === "all"}
                 onChange={() => {
-                  setMaxPrice(price);
+                  setMaxPrice("all");
                   resetVisibleCount();
                 }}
               />
-              Under ${price}
+              All prices
             </label>
-          ))}
-        </fieldset>
-
-        {hasActiveFilters ? (
-          <button className={styles.clearButton} type="button" onClick={clearFilters}>
-            Clear
-          </button>
-        ) : null}
-      </div>
-
-      <div className={styles.resultMeta} aria-live="polite">
-        {filteredProducts.length} product{filteredProducts.length === 1 ? "" : "s"}
+            {priceCeilings.map((price) => (
+              <label key={price} className={styles.panelOption}>
+                <input
+                  type="radio"
+                  name="price"
+                  checked={maxPrice === price}
+                  onChange={() => {
+                    setMaxPrice(price);
+                    resetVisibleCount();
+                  }}
+                />
+                Under {formatPrice(Number(price))}
+              </label>
+            ))}
+          </FilterDropdown>
+        </div>
       </div>
 
       {catalogMessage ? <p className={styles.catalogMessage}>{catalogMessage}</p> : null}
@@ -371,7 +381,7 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
           Load more
         </button>
       ) : (
-        <p className={styles.endLabel}>Loading more...</p>
+        <p className={styles.endLabel}>End of the edit</p>
       )}
     </section>
   );

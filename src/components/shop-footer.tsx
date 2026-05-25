@@ -1,4 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { assetPath } from "@/lib/assets";
 import styles from "./shop-footer.module.css";
 
 const footerGroups = [
@@ -23,9 +25,9 @@ const footerGroups = [
   {
     title: "Support",
     links: [
-      { label: "Warranty & Exchange", href: "/privacy-policy/#returns" },
+      { label: "Returns & Exchanges", href: "/returns-exchanges/" },
       { label: "FAQ", href: "/privacy-policy/#faq" },
-      { label: "Payment & Delivery", href: "/privacy-policy/#orders" },
+      { label: "Shipping & Delivery", href: "/shipping-delivery/" },
     ],
   },
   {
@@ -66,11 +68,18 @@ export function ShopFooter() {
         </form>
       </div>
 
-      <p className={styles.wordmark}>QESHTA<sup>TM</sup></p>
+      <Link className={styles.wordmark} href="/" aria-label="QESHTA home">
+        <img
+          src={assetPath("/images/qeshta-logo.png")}
+          alt="QESHTA"
+          width={563}
+          height={169}
+        />
+      </Link>
 
       <div className={styles.legal}>
         <Link href="/privacy-policy/">Privacy Policy</Link>
-        <Link href="/privacy-policy/#terms">Terms & Conditions</Link>
+        <Link href="/terms/">Terms & Conditions</Link>
       </div>
     </footer>
   );

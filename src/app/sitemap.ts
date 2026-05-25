@@ -32,6 +32,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.4,
     },
+    {
+      url: `${siteConfig.siteUrl}/terms/`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${siteConfig.siteUrl}/shipping-delivery/`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${siteConfig.siteUrl}/returns-exchanges/`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
     ...allProducts.map((product) => ({
       url: `${siteConfig.siteUrl}${getProductUrl(product)}`,
       lastModified,

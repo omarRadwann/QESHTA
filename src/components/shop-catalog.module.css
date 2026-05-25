@@ -1,157 +1,125 @@
 .catalog {
-  padding: 12px 24px 0;
+  padding: 0 24px;
 }
 
-.headingRow,
-.searchRow,
-.categoryBar,
-.resultMeta {
+.toolbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e7e3db;
+  margin: 0 -24px 22px;
+  padding: 14px 24px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.toolbarRow {
   align-items: center;
   display: flex;
-}
-
-.headingRow {
+  gap: 16px;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 
-.headingRow p,
-.resultMeta {
-  font-size: 0.72rem;
-  font-weight: 800;
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.filterToggle,
-.clearButton,
-.loadMore,
-.emptyState button,
-.categoryBar button {
-  background: transparent;
-  border: 1px solid #050505;
-  color: #050505;
-  cursor: pointer;
-  font-size: 0.72rem;
-  line-height: 1;
-  min-height: 28px;
-  padding: 0 12px;
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease,
-    transform 160ms ease;
-}
-
-.filterToggle {
-  border: 0;
-  padding-right: 0;
-}
-
-.filterToggle::before {
-  content: "";
-  border-bottom: 1px solid currentColor;
-  border-top: 1px solid currentColor;
-  display: inline-block;
-  height: 5px;
-  margin-right: 6px;
-  width: 10px;
-}
-
-.searchRow {
+.search {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
   gap: 10px;
-  justify-content: flex-end;
-  margin-bottom: 14px;
 }
 
-.searchRow label {
+.search label {
   font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
-.searchRow input,
-.searchRow select {
+.search input {
   background: #ffffff;
-  border: 1px solid #050505;
+  border: 1px solid #cfc8bd;
   border-radius: 0;
-  font-size: 0.75rem;
-  min-height: 30px;
-  padding: 0 9px;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  font: inherit;
+  font-size: 0.78rem;
+  min-height: 34px;
+  padding: 0 12px;
+  width: min(360px, 56vw);
 }
 
-.searchRow input {
-  width: min(260px, 36vw);
-}
-
-.categoryBar {
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 22px;
-}
-
-.categoryBar button {
-  border-color: #b7b7b3;
-}
-
-.categoryBar .activeCategory {
-  background: #050505;
+.search input:focus {
   border-color: #050505;
-  color: #ffffff;
-}
-
-.filters {
-  border-top: 1px solid #deded9;
-  display: none;
-  gap: 28px;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-  margin: 0 0 24px;
-  padding: 18px 0;
-}
-
-.filtersOpen {
-  animation: filtersIn 180ms ease both;
-  display: grid;
-}
-
-.filters fieldset {
-  border: 0;
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-}
-
-.filters legend {
-  font-size: 0.72rem;
-  font-weight: 800;
-  margin-bottom: 6px;
-  text-transform: uppercase;
-}
-
-.filters label {
-  align-items: center;
-  display: flex;
-  font-size: 0.75rem;
-  gap: 8px;
-}
-
-.filters input {
-  accent-color: #050505;
-}
-
-.clearButton {
-  align-self: start;
+  box-shadow: 0 0 0 3px rgb(5 5 5 / 8%);
+  outline: 0;
 }
 
 .resultMeta {
-  justify-content: flex-end;
-  margin: -8px 0 14px;
+  align-items: center;
+  display: flex;
+  font-size: 0.72rem;
+  font-weight: 800;
+  gap: 14px;
+  margin: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.clearButton {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #050505;
+  color: #050505;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0 0 2px;
+  text-transform: uppercase;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.panelButton {
+  background: transparent;
+  border: 0;
+  color: #050505;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 7px 8px;
+  text-align: left;
+  width: 100%;
+}
+
+.panelButton:hover {
+  background: #f3f1ed;
+}
+
+.panelButtonActive,
+.panelButtonActive:hover {
+  background: #050505;
+  color: #ffffff;
+}
+
+.panelOption {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  font-size: 0.78rem;
+  gap: 9px;
+  padding: 4px 2px;
+}
+
+.panelOption input {
+  accent-color: #050505;
 }
 
 .catalogMessage {
   color: #6d6862;
   font-size: 0.72rem;
   line-height: 1.35;
-  margin: -4px 0 16px;
+  margin: -6px 0 16px;
   text-align: right;
 }
 
@@ -176,6 +144,20 @@
   margin: 0;
 }
 
+.emptyState button,
+.loadMore {
+  background: transparent;
+  border: 1px solid #050505;
+  color: #050505;
+  cursor: pointer;
+  font-size: 0.72rem;
+  line-height: 1;
+  min-height: 30px;
+  padding: 0 16px;
+  text-transform: uppercase;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
 .loadMore,
 .endLabel {
   display: block;
@@ -190,88 +172,45 @@
 }
 
 @media (max-width: 900px) {
-  .grid,
-  .filters {
+  .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
   .catalog {
-    padding-inline: 16px;
+    padding: 0 16px;
   }
 
-  .searchRow {
+  .toolbar {
+    margin: 0 -16px 18px;
+    padding: 12px 16px;
+  }
+
+  .toolbarRow {
     align-items: stretch;
-    display: grid;
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    gap: 10px;
   }
 
-  .searchRow input {
+  .search {
     width: 100%;
   }
 
-  .grid,
-  .filters {
+  .search input {
+    flex: 1;
+    width: 100%;
+  }
+
+  .grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (hover: hover) {
-  .categoryBar button:hover,
-  .clearButton:hover,
-  .emptyState button:hover,
-  .loadMore:hover {
-    transform: translateY(-1px);
-  }
-
-  .categoryBar button:not(.activeCategory):hover,
-  .clearButton:hover,
   .emptyState button:hover,
   .loadMore:hover {
     background: #f3f1ed;
-  }
-
-  .filterToggle:hover {
     transform: translateY(-1px);
-  }
-}
-
-.searchRow input:focus,
-.searchRow select:focus {
-  border-color: #050505;
-  box-shadow: 0 0 0 3px rgb(5 5 5 / 8%);
-  outline: 0;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .categoryBar,
-  .headingRow,
-  .searchRow {
-    animation: controlsReveal 420ms ease both;
-  }
-}
-
-@keyframes controlsReveal {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes filtersIn {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }

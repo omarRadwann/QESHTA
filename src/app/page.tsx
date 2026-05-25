@@ -1,8 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { CuratedProductGrid } from "@/components/curated-product-grid";
 import { EditorialTile } from "@/components/editorial-tile";
+import { FeaturedProductsPanel } from "@/components/featured-products-panel";
 import { JsonLd } from "@/components/json-ld";
-import { ProductCard } from "@/components/product-card";
+import { SelectedProductsCarousel } from "@/components/selected-products-carousel";
 import { SiteHeader } from "@/components/site-header";
 import {
   allProducts,
@@ -97,16 +99,10 @@ export default function Home() {
           </div>
 
           <div className={styles.storyPanel}>
-            <div className={styles.featuredProducts}>
-              {featuredProducts.map((product, index) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  compact
-                  priority={index === 0}
-                />
-              ))}
-            </div>
+            <FeaturedProductsPanel
+              className={styles.featuredProducts}
+              fallback={featuredProducts}
+            />
 
             <div id="journal" className={styles.storyCopy}>
               <strong>Bold shape</strong>
@@ -145,37 +141,14 @@ export default function Home() {
             <Link href="/shop/">Shop Best Sellers</Link>
           </div>
 
-          <div className={styles.productGrid}>
-            {bestSellerProducts.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                priority={index < 2}
-              />
-            ))}
-          </div>
+          <CuratedProductGrid
+            slot="bestseller"
+            fallback={bestSellerProducts}
+            priorityCount={2}
+          />
         </section>
 
-        <section id="selected-products" className={styles.selected} aria-label="Selected products">
-          <div className={styles.selectedHeader}>
-            <h2>Selected products</h2>
-            <div className={styles.pager} aria-label="Product carousel navigation">
-              <span>Prev</span>
-              <span>/</span>
-              <span>Next</span>
-            </div>
-          </div>
-
-          <div className={styles.productGrid}>
-            {selectedProducts.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                priority={index < 2}
-              />
-            ))}
-          </div>
-        </section>
+        <SelectedProductsCarousel fallback={selectedProducts} />
 
         <section
           id="newsletter"
