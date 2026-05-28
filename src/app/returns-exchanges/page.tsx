@@ -40,7 +40,7 @@ const sections: PolicySectionData[] = [
     content: (
       <>
         <p>
-          To start a return or exchange, contact support at support@qeshta.com or
+          To start a return or exchange, contact support at support@qeshta.net or
           through our official Instagram and WhatsApp channels with your order
           number and the item you wish to return, and tell us whether you would
           like a refund or an exchange.
@@ -99,7 +99,7 @@ const sections: PolicySectionData[] = [
     title: "Contact",
     content: (
       <p>
-        For returns and exchanges, contact QESHTA support at support@qeshta.com or
+        For returns and exchanges, contact QESHTA support at support@qeshta.net or
         through our official Instagram and WhatsApp channels. Please include your
         order number so we can verify and respond quickly.
       </p>

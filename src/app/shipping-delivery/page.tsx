@@ -84,7 +84,7 @@ const sections: PolicySectionData[] = [
     title: "Contact",
     content: (
       <p>
-        For delivery questions, contact QESHTA support at support@qeshta.com or
+        For delivery questions, contact QESHTA support at support@qeshta.net or
         through our official Instagram and WhatsApp channels. Please include your
         order number so we can respond quickly.
       </p>

@@ -170,7 +170,7 @@ const sections: PolicySectionData[] = [
     content: (
       <p>
         For privacy, order, return, or account requests, contact QESHTA support
-        by email at support@qeshta.com or through our official Instagram and
+        by email at support@qeshta.net or through our official Instagram and
         WhatsApp channels. Please include the email address connected to your
         account so we can verify and respond quickly. QESHTA is operated in Cairo,
         Egypt.

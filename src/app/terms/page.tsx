@@ -127,7 +127,7 @@ const sections: PolicySectionData[] = [
     title: "Contact",
     content: (
       <p>
-        Questions about these terms can be sent to support@qeshta.com or through
+        Questions about these terms can be sent to support@qeshta.net or through
         our official Instagram and WhatsApp channels. QESHTA is operated in Cairo,
         Egypt.
       </p>

@@ -289,7 +289,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
         </p>
 
         <div className={styles.footerLine}>
-          <a href="mailto:hello@qeshta.com">Need help?</a>
+          <a href="mailto:hello@qeshta.net">Need help?</a>
           <span>Free worldwide shipping</span>
         </div>
       </div>

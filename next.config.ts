@@ -1,14 +1,15 @@
 import type { NextConfig } from "next";
 
-const isGitHubPages = process.env.GITHUB_PAGES === "true";
-const repositoryName = "QESHTA";
+// Optional sub-path base (e.g. project Pages). Empty for the root custom
+// domain qeshta.net.
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH?.trim() || "";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
   output: "export",
   trailingSlash: true,
-  basePath: isGitHubPages ? `/${repositoryName}` : "",
-  assetPrefix: isGitHubPages ? `/${repositoryName}/` : undefined,
+  basePath: basePath || undefined,
+  assetPrefix: basePath ? `${basePath}/` : undefined,
   images: {
     unoptimized: true,
   },

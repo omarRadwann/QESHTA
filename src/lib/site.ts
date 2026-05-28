@@ -1,7 +1,4 @@
-const githubPagesUrl = "https://omarradwann.github.io/QESHTA";
-const productionUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.GITHUB_PAGES === "true" ? githubPagesUrl : "https://qeshta.com");
+const productionUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://qeshta.net";
 
 export const siteConfig = {
   name: "QESHTA",
