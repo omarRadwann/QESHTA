@@ -4,6 +4,7 @@ import { CuratedProductGrid } from "@/components/curated-product-grid";
 import { EditorialTile } from "@/components/editorial-tile";
 import { FeaturedProductsPanel } from "@/components/featured-products-panel";
 import { JsonLd } from "@/components/json-ld";
+import { NewsletterForm } from "@/components/newsletter-form";
 import { SelectedProductsCarousel } from "@/components/selected-products-carousel";
 import { SiteHeader } from "@/components/site-header";
 import {
@@ -160,19 +161,11 @@ export default function Home() {
             <h2 id="newsletter-title">Collection notes, early access, and quiet sale alerts.</h2>
           </div>
 
-          <form className={styles.newsletterForm}>
-            <label htmlFor="home-newsletter-email">Email</label>
-            <div>
-              <input
-                id="home-newsletter-email"
-                name="email"
-                type="email"
-                placeholder="Email"
-                required
-              />
-              <button type="submit">Join</button>
-            </div>
-          </form>
+          <NewsletterForm
+            className={styles.newsletterForm}
+            source="home"
+            buttonLabel="Join"
+          />
         </section>
       </div>
     </main>

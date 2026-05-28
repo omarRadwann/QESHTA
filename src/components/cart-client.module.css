@@ -196,8 +196,15 @@
   }
 
   .quantity {
+    gap: 14px;
     grid-column: 2;
+    grid-template-columns: 40px 28px 40px;
     justify-content: start;
+  }
+
+  .quantity button {
+    height: 40px;
+    width: 40px;
   }
 
   .summary {

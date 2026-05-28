@@ -30,6 +30,31 @@
   justify-content: end;
 }
 
+.rightCluster {
+  align-items: center;
+  display: flex;
+  gap: 24px;
+  justify-content: end;
+}
+
+.menuToggle {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 0 8px 16px;
+}
+
+.menuToggle span {
+  background: currentColor;
+  display: block;
+  height: 1.5px;
+  width: 24px;
+}
+
 .navGroup a,
 .navGroupRight a {
   color: inherit;
@@ -54,11 +79,10 @@
 
 @media (max-width: 760px) {
   .header {
+    align-items: center;
     font-size: 0.66rem;
     gap: 16px;
-    grid-template-columns: 1fr;
     inset: 22px 18px auto;
-    justify-items: center;
   }
 
   .light {
@@ -70,8 +94,91 @@
     display: none;
   }
 
+  .menuToggle {
+    display: inline-flex;
+  }
+
   .logo {
     height: 38px;
     width: 128px;
+  }
+}
+
+.menuOverlay {
+  animation: menuIn 0.3s ease;
+  background: #ffffff;
+  color: #050505;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  inset: 0;
+  overflow-y: auto;
+  padding: 26px 22px 48px;
+  position: fixed;
+  z-index: 50;
+}
+
+.menuClose {
+  align-self: flex-end;
+  background: transparent;
+  border: 0;
+  color: #050505;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 8px;
+  text-transform: uppercase;
+}
+
+.menuPrimary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.menuPrimary a {
+  color: #050505;
+  font-size: clamp(2rem, 12vw, 3.2rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.menuUtility {
+  border-top: 1px solid #e2ded7;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 28px;
+}
+
+.menuUtility a {
+  color: #050505;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menuOverlay {
+    animation: none;
   }
 }

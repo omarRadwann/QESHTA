@@ -235,7 +235,7 @@
 }
 
 .pager span:first-child {
-  color: #858585;
+  color: #6a6a6a;
 }
 
 .productGrid {
@@ -289,7 +289,6 @@
   flex: 1;
   min-height: 44px;
   min-width: 0;
-  outline: 0;
 }
 
 .newsletterForm button {

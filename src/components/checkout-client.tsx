@@ -90,11 +90,19 @@ export function CheckoutClient() {
       const supabase = getSupabaseBrowserClient();
       const order = await createOrder(supabase, lines, details);
 
+      // The order is committed server-side here — surface success before the
+      // remote-cart cleanup so a transient cleanup failure can't make a completed
+      // order look like it failed.
       clearCart();
       setLines([]);
-      await clearRemoteCart(supabase, session.user.id);
       setOrderNumber(order.order_number);
       setMessage("Order received. The QESHTA team will confirm fulfillment.");
+
+      try {
+        await clearRemoteCart(supabase, session.user.id);
+      } catch (cleanupError) {
+        console.warn("Order placed, but clearing the synced cart failed.", cleanupError);
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Checkout failed.");
     } finally {

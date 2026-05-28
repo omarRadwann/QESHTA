@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { NewsletterForm } from "@/components/newsletter-form";
 import { assetPath } from "@/lib/assets";
 import styles from "./shop-footer.module.css";
 
@@ -7,10 +8,10 @@ const footerGroups = [
   {
     title: "Shop",
     links: [
-      { label: "Shoes", href: "/shop/" },
-      { label: "Bags", href: "/shop/" },
-      { label: "Clothing", href: "/shop/" },
-      { label: "New in", href: "/shop/" },
+      { label: "Coats & Jackets", href: "/shop/?category=Coats%20%26%20Jackets" },
+      { label: "Dresses", href: "/shop/?category=Dresses" },
+      { label: "Shoes", href: "/shop/?category=Shoes" },
+      { label: "Accessories", href: "/shop/?category=Accessories" },
     ],
   },
   {
@@ -30,14 +31,6 @@ const footerGroups = [
       { label: "Shipping & Delivery", href: "/shipping-delivery/" },
     ],
   },
-  {
-    title: "Social",
-    links: [
-      { label: "TikTok", href: "/shop/" },
-      { label: "Instagram", href: "/shop/" },
-      { label: "Pinterest", href: "/shop/" },
-    ],
-  },
 ];
 
 export function ShopFooter() {
@@ -55,17 +48,13 @@ export function ShopFooter() {
           </nav>
         ))}
 
-        <form className={styles.newsletter}>
-          <h2>Newsletter</h2>
-          <p>Sign up to receive news about collections, events and sales.</p>
-          <label htmlFor="newsletter-email">Email</label>
-          <div>
-            <input id="newsletter-email" name="email" type="email" placeholder="Email" />
-            <button type="submit" aria-label="Submit newsletter email">
-              Go
-            </button>
-          </div>
-        </form>
+        <NewsletterForm
+          className={styles.newsletter}
+          source="footer"
+          buttonLabel="Go"
+          heading="Newsletter"
+          description="Sign up to receive news about collections, events and sales."
+        />
       </div>
 
       <Link className={styles.wordmark} href="/" aria-label="QESHTA home">

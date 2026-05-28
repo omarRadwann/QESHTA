@@ -91,6 +91,27 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
       catalog_products: {
         Row: {
           allow_backorder: boolean
@@ -589,6 +610,8 @@ export type ContentBannerUpdate = TablesUpdate<"content_banners">
 export type HomepageProduct = Tables<"homepage_products">
 export type HomepageProductInsert = TablesInsert<"homepage_products">
 export type HomepageProductUpdate = TablesUpdate<"homepage_products">
+export type NewsletterSubscriber = Tables<"newsletter_subscribers">
+export type NewsletterSubscriberInsert = TablesInsert<"newsletter_subscribers">
 export type AccountRole = "customer" | "admin"
 export type OrderStatus = "pending_review" | "paid" | "fulfilled" | "cancelled"
 export type CatalogProductStatus = "active" | "draft" | "archived"

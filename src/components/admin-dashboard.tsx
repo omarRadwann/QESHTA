@@ -191,11 +191,24 @@ export function AdminDashboard() {
       }
     }
 
+    // Initial-load path. The listener below intentionally filters INITIAL_SESSION,
+    // so this explicit call is what boots the dashboard on first mount — keep paired.
     void bootAdmin();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
+    } = supabase.auth.onAuthStateChange((event) => {
+      // The initial boot is handled by the explicit bootAdmin() call above, and
+      // token refreshes / user-metadata updates don't change access — re-booting on
+      // those just flashes the "Loading admin" screen while the admin is working.
+      if (
+        event === "INITIAL_SESSION" ||
+        event === "TOKEN_REFRESHED" ||
+        event === "USER_UPDATED"
+      ) {
+        return;
+      }
+
       window.setTimeout(() => {
         void bootAdmin();
       }, 0);

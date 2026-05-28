@@ -323,6 +323,33 @@
   }
 }
 
+@media (max-width: 600px) {
+  /* Bare text sizes are far too small to tap on a phone. Render them as
+     touch-friendly chips (44px target) while desktop keeps the editorial look. */
+  .sizeList {
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .sizeList button {
+    align-items: center;
+    border: 1px solid #d8d3cb;
+    display: inline-flex;
+    justify-content: center;
+    line-height: 1;
+    min-height: 44px;
+    min-width: 46px;
+    padding: 0 12px;
+  }
+
+  .sizeList .activeSize {
+    background: #050505;
+    border-color: #050505;
+    color: #ffffff;
+  }
+}
+
 @keyframes productShellIn {
   from {
     opacity: 0;

@@ -1,0 +1,71 @@
+.page {
+  background: #ffffff;
+  color: #050505;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.hero {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+  padding: 120px 24px;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: clamp(2.2rem, 7vw, 5rem);
+  font-weight: 500;
+  line-height: 0.98;
+  margin: 0;
+  max-width: 16ch;
+  text-transform: uppercase;
+}
+
+.copy {
+  color: #565656;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 46ch;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.primary,
+.secondary {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 14px 26px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.primary {
+  background: #050505;
+  color: #ffffff;
+}
+
+.secondary {
+  border: 1px solid #050505;
+  color: #050505;
+}

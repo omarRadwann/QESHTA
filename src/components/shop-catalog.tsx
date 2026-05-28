@@ -56,6 +56,18 @@ export function ShopCatalog({ products }: ShopCatalogProps) {
   const [catalogMessage, setCatalogMessage] = useState("");
   const catalogProducts = liveProducts ?? products;
 
+  // Honor a ?category= deep link (e.g. footer "Shop" links) on first load.
+  // This is a deliberate one-time, client-only sync that must run AFTER hydration:
+  // reading window.location in a useState initializer would crash during static
+  // export (no window) and otherwise cause a server/client hydration mismatch.
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("category");
+    if (requested && (shopCategories as readonly string[]).includes(requested)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional post-hydration URL sync (see comment above)
+      setActiveCategory(requested as ShopCategory);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
