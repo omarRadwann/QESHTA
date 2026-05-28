@@ -826,6 +826,80 @@
   }
 }
 
+/* ---------- Mobile: turn data tables into stacked cards ---------- */
+@media (max-width: 760px) {
+  .tableWrap {
+    border: 0;
+    border-radius: 0;
+    overflow-x: visible;
+  }
+
+  .table {
+    min-width: 0;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody tr {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    display: block;
+    margin-bottom: 14px;
+    padding: 4px 16px 10px;
+  }
+
+  .table tbody tr:hover td {
+    background: transparent;
+  }
+
+  .table td {
+    border-bottom: 1px solid var(--line);
+    display: block;
+    padding: 11px 0;
+    text-align: left;
+    width: 100%;
+  }
+
+  .table tbody tr td:last-child {
+    border-bottom: 0;
+  }
+
+  .table td::before {
+    color: var(--muted);
+    content: attr(data-label);
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  /* Detail / expanded edit rows: full-width, no label (inner grids already stack) */
+  .orderDetailRow,
+  .detailEditRow {
+    background: #faf8f4 !important;
+  }
+
+  .orderDetailRow td,
+  .detailEditRow td {
+    border-bottom: 0;
+    padding: 8px 0;
+  }
+
+  .orderDetailRow td::before,
+  .detailEditRow td::before {
+    display: none;
+  }
+
+  .table .statusSelect {
+    width: auto;
+  }
+}
+
 /* ---------- Color picker field ---------- */
 .colorInputGroup {
   align-items: center;

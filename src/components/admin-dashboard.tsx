@@ -1078,21 +1078,21 @@ function OrderTable({
             return (
               <Fragment key={order.id}>
                 <tr>
-                  <td>
+                  <td data-label="Order">
                     <strong>{order.order_number}</strong>
                     <span>{formatDate(order.created_at)}</span>
                     <span>{formatAddress(order.shipping_address)}</span>
                   </td>
-                  <td>
+                  <td data-label="Customer">
                     <strong>{order.customer_name}</strong>
                     <span>{order.customer_email}</span>
                     <span>{order.phone || "No phone"}</span>
                   </td>
-                  <td>{items.length > 0 ? summarizeItems(items) : "No items"}</td>
-                  <td>
+                  <td data-label="Items">{items.length > 0 ? summarizeItems(items) : "No items"}</td>
+                  <td data-label="Total">
                     <strong>{formatPrice(Number(order.total))}</strong>
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <select
                       aria-label={`Status for ${order.order_number}`}
                       className={styles.statusSelect}
@@ -1110,7 +1110,7 @@ function OrderTable({
                       ))}
                     </select>
                   </td>
-                  <td>
+                  <td data-label="Manage">
                     <div className={styles.actionStack}>
                       <button
                         className={styles.tableButton}
@@ -1634,7 +1634,7 @@ function ProductTable({
             return (
               <Fragment key={product.product_id}>
                 <tr>
-                  <td>
+                  <td data-label="Product">
                     <div className={styles.productCell}>
                       <img
                         src={assetPath(draft.image || product.image)}
@@ -1654,7 +1654,7 @@ function ProductTable({
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Price">
                     <input
                       aria-label={`Price for ${product.name}`}
                       disabled={disabled}
@@ -1665,7 +1665,7 @@ function ProductTable({
                       onChange={(event) => updateDraft({ price: event.target.value })}
                     />
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <select
                       aria-label={`Status for ${product.name}`}
                       className={styles.statusSelect}
@@ -1685,7 +1685,7 @@ function ProductTable({
                       ))}
                     </select>
                   </td>
-                  <td>
+                  <td data-label="Stock">
                     <input
                       aria-label={`Inventory for ${product.name}`}
                       disabled={disabled}
@@ -1697,7 +1697,7 @@ function ProductTable({
                       }
                     />
                   </td>
-                  <td>
+                  <td data-label="Low stock">
                     <input
                       aria-label={`Low stock threshold for ${product.name}`}
                       disabled={disabled}
@@ -1709,7 +1709,7 @@ function ProductTable({
                       }
                     />
                   </td>
-                  <td>
+                  <td data-label="Backorder">
                     <label className={styles.switchLabel}>
                       <input
                         checked={product.allow_backorder}
@@ -1724,7 +1724,7 @@ function ProductTable({
                       Allow
                     </label>
                   </td>
-                  <td>
+                  <td data-label="Featured">
                     <label className={styles.switchLabel}>
                       <input
                         checked={product.featured}
@@ -1739,7 +1739,7 @@ function ProductTable({
                       Feature
                     </label>
                   </td>
-                  <td>
+                  <td data-label="Actions">
                     <div className={styles.actionStack}>
                       <button
                         className={styles.tableButton}
@@ -1948,13 +1948,13 @@ function CustomerTable({
 
             return (
               <tr key={customer.id}>
-                <td>
+                <td data-label="Customer">
                   <strong>{customer.full_name || "Unnamed customer"}</strong>
                   <span>{customer.email}</span>
                 </td>
-                <td>{customer.phone || "Not added"}</td>
-                <td>{customer.marketing_opt_in ? "Opted in" : "No"}</td>
-                <td>
+                <td data-label="Phone">{customer.phone || "Not added"}</td>
+                <td data-label="Marketing">{customer.marketing_opt_in ? "Opted in" : "No"}</td>
+                <td data-label="Role">
                   <select
                     aria-label={`Role for ${customer.email}`}
                     disabled={disabled || isCurrentAdmin}
@@ -1968,7 +1968,7 @@ function CustomerTable({
                   </select>
                   {isCurrentAdmin ? <span>Current admin</span> : null}
                 </td>
-                <td>{formatDate(customer.created_at)}</td>
+                <td data-label="Joined">{formatDate(customer.created_at)}</td>
               </tr>
             );
           })}
