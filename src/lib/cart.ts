@@ -1,5 +1,12 @@
 export const CART_STORAGE_KEY = "qeshta-cart";
 export const CART_CHANGE_EVENT = "qeshta-cart-change";
+export const CART_DRAWER_OPEN = "qeshta-cart-drawer-open";
+
+/** Dispatch the event that opens the global slide-out cart drawer. */
+export function openCartDrawer() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(CART_DRAWER_OPEN));
+}
 
 export type CartLine = {
   key: string;

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed } from "next/font/google";
 import { AnnouncementBar } from "@/components/announcement-bar";
+import { CartDrawer } from "@/components/cart-drawer";
 import { ShopFooter } from "@/components/shop-footer";
 import { assetPath, siteAssetUrl } from "@/lib/assets";
 import { siteConfig } from "@/lib/site";
@@ -82,6 +83,7 @@ export default function RootLayout({
         <AnnouncementBar />
         {children}
         <ShopFooter />
+        <CartDrawer />
       </body>
     </html>
   );

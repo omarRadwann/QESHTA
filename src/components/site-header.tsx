@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CART_CHANGE_EVENT, getCartCount, readCart } from "@/lib/cart";
+import { CART_CHANGE_EVENT, getCartCount, openCartDrawer, readCart } from "@/lib/cart";
 import { assetPath } from "@/lib/assets";
 import {
   getWishlistCount,
@@ -240,25 +240,35 @@ export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
 
         <div className={styles.slotRight}>
           <nav className={styles.navGroupRight} aria-label="Store navigation">
-            {utilityItems.map((item) => (
-              <Link key={item.id} href={item.href}>
-                {item.id === "cart"
-                  ? `${item.label} (${cartCount})`
-                  : item.id === "wishlist"
+            {utilityItems.map((item) =>
+              item.id === "cart" ? (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={styles.navButton}
+                  onClick={openCartDrawer}
+                >
+                  {`${item.label} (${cartCount})`}
+                </button>
+              ) : (
+                <Link key={item.id} href={item.href}>
+                  {item.id === "wishlist"
                     ? `${item.label} (${wishlistCount})`
                     : item.label}
-              </Link>
-            ))}
+                </Link>
+              ),
+            )}
           </nav>
 
-          <Link
+          <button
+            type="button"
             className={styles.cartToggle}
-            href="/cart/"
-            aria-label={`Cart, ${cartCount} item${cartCount === 1 ? "" : "s"}`}
+            onClick={openCartDrawer}
+            aria-label={`Open bag, ${cartCount} item${cartCount === 1 ? "" : "s"}`}
           >
             <BagIcon />
             {cartCount > 0 ? <span className={styles.cartBadge}>{cartCount}</span> : null}
-          </Link>
+          </button>
         </div>
       </header>
 

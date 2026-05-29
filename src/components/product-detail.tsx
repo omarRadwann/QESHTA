@@ -14,7 +14,7 @@ import {
   type ProductVariant,
 } from "@/data/products";
 import { assetPath } from "@/lib/assets";
-import { addCartLine } from "@/lib/cart";
+import { addCartLine, openCartDrawer } from "@/lib/cart";
 import {
   catalogProductToAvailability,
   catalogProductToProduct,
@@ -149,6 +149,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
       variantLabel: selectedVariant.label,
       size: selectedSize,
     });
+    openCartDrawer();
     setLastAddedLabel(`${selectedVariant.label} / ${selectedSize}`);
     setCartState("added");
     cartStateResetTimer.current = window.setTimeout(() => {

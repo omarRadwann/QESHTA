@@ -55,11 +55,21 @@
 }
 
 .navGroup a,
-.navGroupRight a {
+.navGroupRight a,
+.navButton {
   color: inherit;
   letter-spacing: 0.08em;
   text-decoration: none;
   text-transform: uppercase;
+}
+
+.navButton {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  padding: 0;
 }
 
 .logo {
@@ -101,9 +111,13 @@
 /* Cart icon button (mobile only; desktop uses the text "Cart (n)" link) */
 .cartToggle {
   align-items: center;
+  background: transparent;
+  border: 0;
   color: inherit;
+  cursor: pointer;
   display: none;
   justify-content: center;
+  padding: 0;
   position: relative;
 }
 
