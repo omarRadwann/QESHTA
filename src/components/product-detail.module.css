@@ -67,16 +67,21 @@
   min-height: 56px;
 }
 
-.metaRow h1,
-.metaRow p {
-  font-size: 0.78rem;
-  font-weight: 500;
-  line-height: 1.15;
+.metaRow h1 {
+  font-size: clamp(1.5rem, 3.2vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
   margin: 0;
+  text-transform: uppercase;
 }
 
 .metaRow p {
-  margin-top: 7px;
+  color: #6a655f;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 10px 0 0;
 }
 
 .metaRow span {
@@ -139,10 +144,10 @@
 
 .sizeList {
   display: flex;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.sizeList button,
 .fitButton,
 .tabs button,
 .footerLine a {
@@ -157,16 +162,38 @@
   text-decoration: none;
 }
 
-.sizeList button,
 .fitButton {
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px solid currentColor;
   padding-bottom: 3px;
 }
 
-.sizeList .activeSize,
-.fitButton,
 .footerLine a {
-  border-bottom-color: currentColor;
+  border-bottom: 1px solid currentColor;
+}
+
+/* Zenith-style square size chips */
+.sizeList button {
+  align-items: center;
+  background: #f5f5f5;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  color: #050505;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 500;
+  justify-content: center;
+  line-height: 1;
+  min-height: 42px;
+  min-width: 46px;
+  padding: 0 10px;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.sizeList .activeSize {
+  background: #050505;
+  border-color: #050505;
+  color: #ffffff;
 }
 
 .cartButton {
@@ -215,8 +242,9 @@
 
 .tabs button {
   border-bottom: 1px solid transparent;
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   padding-bottom: 4px;
   text-transform: uppercase;
 }
@@ -313,40 +341,9 @@
     width: 80%;
   }
 
-  .sizeList {
-    gap: 18px;
-  }
-
   .tabs {
     gap: 16px;
     justify-content: space-between;
-  }
-}
-
-@media (max-width: 600px) {
-  /* Bare text sizes are far too small to tap on a phone. Render them as
-     touch-friendly chips (44px target) while desktop keeps the editorial look. */
-  .sizeList {
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: flex-end;
-  }
-
-  .sizeList button {
-    align-items: center;
-    border: 1px solid #d8d3cb;
-    display: inline-flex;
-    justify-content: center;
-    line-height: 1;
-    min-height: 44px;
-    min-width: 46px;
-    padding: 0 12px;
-  }
-
-  .sizeList .activeSize {
-    background: #050505;
-    border-color: #050505;
-    color: #ffffff;
   }
 }
 

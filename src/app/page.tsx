@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { CollectionBlocks } from "@/components/collection-blocks";
 import { CuratedProductGrid } from "@/components/curated-product-grid";
 import { EditorialTile } from "@/components/editorial-tile";
 import { FeaturedProductsPanel } from "@/components/featured-products-panel";
@@ -148,6 +149,8 @@ export default function Home() {
             priorityCount={2}
           />
         </section>
+
+        <CollectionBlocks />
 
         <SelectedProductsCarousel fallback={selectedProducts} />
 
