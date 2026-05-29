@@ -1,42 +1,85 @@
 .header {
-  align-items: start;
+  align-items: center;
   color: #ffffff;
   display: grid;
   font-size: 0.73rem;
   font-weight: 500;
   grid-template-columns: 1fr auto 1fr;
-  inset: 32px 24px auto;
+  height: var(--header-h);
+  left: 0;
   line-height: 1;
-  position: absolute;
-  z-index: 5;
+  padding: 0 24px;
+  position: fixed;
+  right: 0;
+  top: var(--ann-h);
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  z-index: 50;
 }
 
-.light {
+/* Solid background once scrolled (homepage) */
+.header.scrolled {
+  background: #ffffff;
+  border-bottom: 1px solid #ececec;
   color: #050505;
-  inset: auto;
-  padding: 28px 24px 22px;
-  position: relative;
+}
+
+/* Inner pages: always solid */
+.light {
+  background: #ffffff;
+  border-bottom: 1px solid #ececec;
+  color: #050505;
+}
+
+/* In-flow spacer so inner-page content clears the fixed header */
+.spacer {
+  height: var(--header-h);
+}
+
+.slotLeft,
+.slotRight {
+  align-items: center;
+  display: flex;
+  gap: 26px;
+  min-width: 0;
+}
+
+.slotRight {
+  justify-content: flex-end;
 }
 
 .navGroup,
 .navGroupRight {
   align-items: center;
   display: flex;
-  gap: 28px;
-  min-height: 32px;
+  gap: 26px;
 }
 
-.navGroupRight {
-  justify-content: end;
+.navGroup a,
+.navGroupRight a {
+  color: inherit;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
 }
 
-.rightCluster {
-  align-items: center;
-  display: flex;
-  gap: 24px;
-  justify-content: end;
+.logo {
+  display: block;
+  width: 150px;
 }
 
+.logo img {
+  filter: invert(1) brightness(4);
+  height: auto;
+  transition: filter 0.25s ease;
+  width: 100%;
+}
+
+.scrolled .logo img,
+.light .logo img {
+  filter: none;
+}
+
+/* Hamburger (mobile only) */
 .menuToggle {
   background: transparent;
   border: 0;
@@ -45,48 +88,60 @@
   display: none;
   flex-direction: column;
   gap: 5px;
-  padding: 8px 0 8px 16px;
+  padding: 8px 8px 8px 0;
 }
 
 .menuToggle span {
   background: currentColor;
   display: block;
   height: 1.5px;
-  width: 24px;
+  width: 22px;
 }
 
-.navGroup a,
-.navGroupRight a {
+/* Cart icon button (mobile only; desktop uses the text "Cart (n)" link) */
+.cartToggle {
+  align-items: center;
   color: inherit;
-  text-decoration: none;
+  display: none;
+  justify-content: center;
+  position: relative;
 }
 
-.logo {
-  display: block;
-  height: 46px;
-  width: 154px;
+.cartBadge {
+  align-items: center;
+  background: currentColor;
+  border-radius: 999px;
+  display: flex;
+  font-size: 0.58rem;
+  font-weight: 700;
+  height: 15px;
+  justify-content: center;
+  min-width: 15px;
+  padding: 0 3px;
+  position: absolute;
+  right: -7px;
+  top: -5px;
 }
 
-.logo img {
-  filter: invert(1) brightness(4);
-  height: auto;
-  width: 100%;
+/* The badge number takes the inverse of the icon color */
+.cartBadge {
+  color: #ffffff;
 }
 
-.light .logo img {
-  filter: none;
+.scrolled .cartBadge,
+.light .cartBadge {
+  color: #ffffff;
+  background: #050505;
+}
+
+.header:not(.scrolled):not(.light) .cartBadge {
+  background: #ffffff;
+  color: #050505;
 }
 
 @media (max-width: 760px) {
   .header {
-    align-items: center;
-    font-size: 0.66rem;
-    gap: 16px;
-    inset: 22px 18px auto;
-  }
-
-  .light {
-    padding: 20px 16px 16px;
+    padding: 0 16px;
   }
 
   .navGroup,
@@ -94,16 +149,17 @@
     display: none;
   }
 
-  .menuToggle {
+  .menuToggle,
+  .cartToggle {
     display: inline-flex;
   }
 
   .logo {
-    height: 38px;
-    width: 128px;
+    width: 122px;
   }
 }
 
+/* ---------- Full-screen mobile menu ---------- */
 .menuOverlay {
   animation: menuIn 0.3s ease;
   background: #ffffff;
@@ -115,7 +171,7 @@
   overflow-y: auto;
   padding: 26px 22px 48px;
   position: fixed;
-  z-index: 50;
+  z-index: 70;
 }
 
 .menuClose {
@@ -180,5 +236,10 @@
 @media (prefers-reduced-motion: reduce) {
   .menuOverlay {
     animation: none;
+  }
+
+  .logo img,
+  .header {
+    transition: none;
   }
 }

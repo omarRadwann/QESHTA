@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed } from "next/font/google";
+import { AnnouncementBar } from "@/components/announcement-bar";
 import { ShopFooter } from "@/components/shop-footer";
 import { assetPath, siteAssetUrl } from "@/lib/assets";
 import { siteConfig } from "@/lib/site";
@@ -78,6 +79,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={qeshtaFont.variable}>
       <body>
+        <AnnouncementBar />
         {children}
         <ShopFooter />
       </body>

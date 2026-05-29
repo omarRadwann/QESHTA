@@ -36,6 +36,23 @@ const utilityNav = [
   { id: "cart", label: "Cart", href: "/cart/" },
 ];
 
+function BagIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
+      <path d="M6 8h12l-1 12H7L6 8Z" strokeLinejoin="round" />
+      <path d="M9 8V6a3 3 0 0 1 6 0v2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 type SiteHeaderProps = {
   variant?: "overlay" | "light";
 };
@@ -45,7 +62,17 @@ export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 8);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     function syncCartCount() {
@@ -168,42 +195,18 @@ export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
       ]
     : utilityNav;
 
+  const headerClassName = [
+    styles.header,
+    variant === "light" ? styles.light : "",
+    scrolled ? styles.scrolled : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <>
-      <header
-        className={`${styles.header} ${variant === "light" ? styles.light : ""}`}
-        aria-label="QESHTA storefront header"
-      >
-        <nav className={styles.navGroup} aria-label="Main navigation">
-          {primaryNav.map((item) => (
-            <Link key={item.label} href={item.href}>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <Link className={styles.logo} href="/" aria-label="QESHTA home">
-          <img
-            src={assetPath("/images/qeshta-logo.png")}
-            alt="QESHTA"
-            width={563}
-            height={169}
-          />
-        </Link>
-
-        <div className={styles.rightCluster}>
-          <nav className={styles.navGroupRight} aria-label="Store navigation">
-            {utilityItems.map((item) => (
-              <Link key={item.id} href={item.href}>
-                {item.id === "cart"
-                  ? `${item.label} (${cartCount})`
-                  : item.id === "wishlist"
-                    ? `${item.label} (${wishlistCount})`
-                    : item.label}
-              </Link>
-            ))}
-          </nav>
-
+      <header className={headerClassName} aria-label="QESHTA storefront header">
+        <div className={styles.slotLeft}>
           <button
             type="button"
             className={styles.menuToggle}
@@ -216,8 +219,50 @@ export function SiteHeader({ variant = "overlay" }: SiteHeaderProps) {
             <span />
             <span />
           </button>
+
+          <nav className={styles.navGroup} aria-label="Main navigation">
+            {primaryNav.map((item) => (
+              <Link key={item.label} href={item.href}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <Link className={styles.logo} href="/" aria-label="QESHTA home">
+          <img
+            src={assetPath("/images/qeshta-logo.png")}
+            alt="QESHTA"
+            width={563}
+            height={169}
+          />
+        </Link>
+
+        <div className={styles.slotRight}>
+          <nav className={styles.navGroupRight} aria-label="Store navigation">
+            {utilityItems.map((item) => (
+              <Link key={item.id} href={item.href}>
+                {item.id === "cart"
+                  ? `${item.label} (${cartCount})`
+                  : item.id === "wishlist"
+                    ? `${item.label} (${wishlistCount})`
+                    : item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <Link
+            className={styles.cartToggle}
+            href="/cart/"
+            aria-label={`Cart, ${cartCount} item${cartCount === 1 ? "" : "s"}`}
+          >
+            <BagIcon />
+            {cartCount > 0 ? <span className={styles.cartBadge}>{cartCount}</span> : null}
+          </Link>
         </div>
       </header>
+
+      {variant === "light" ? <div className={styles.spacer} aria-hidden="true" /> : null}
 
       <MobileMenu
         open={menuOpen}

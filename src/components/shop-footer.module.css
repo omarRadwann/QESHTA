@@ -1,42 +1,39 @@
 .footer {
   background: #ffffff;
+  border-top: 1px solid #ececec;
   color: #050505;
-  padding: 72px 24px 30px;
+  padding: 64px 24px 30px;
 }
 
-.columns {
+/* ---------- Newsletter band ---------- */
+.newsletterBand {
+  align-items: end;
+  border-bottom: 1px solid #e6e3dd;
   display: grid;
-  gap: 48px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 32px 56px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 460px);
+  padding-bottom: 44px;
 }
 
-.columns nav,
-.newsletter {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.columns h2 {
+.eyebrow {
   font-size: 0.7rem;
   font-weight: 800;
-  margin: 0 0 8px;
+  letter-spacing: 0.16em;
+  margin: 0 0 12px;
   text-transform: uppercase;
 }
 
-.columns a,
-.newsletter p,
-.newsletter label,
-.legal a {
-  font-size: 0.75rem;
-  line-height: 1.25;
-  text-decoration: none;
+.newsletterIntro h2 {
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+  margin: 0;
+  max-width: 16ch;
+  text-transform: uppercase;
 }
 
-.newsletter p {
-  margin: 0 0 12px;
-}
-
+/* Bare newsletter form (heading/description live in the intro) */
 .newsletter label {
   clip: rect(0, 0, 0, 0);
   height: 1px;
@@ -50,28 +47,69 @@
   align-items: center;
   border-bottom: 1px solid #050505;
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 
 .newsletter input {
+  background: transparent;
   border: 0;
+  color: #050505;
   flex: 1;
+  min-height: 40px;
   min-width: 0;
-  padding: 9px 0;
 }
 
 .newsletter button {
   background: transparent;
   border: 0;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   padding: 0;
+  text-transform: uppercase;
 }
 
+/* ---------- Link columns ---------- */
+.columns {
+  display: grid;
+  gap: 40px 48px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 48px 0 8px;
+}
+
+.columns nav {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.columns h3 {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.columns a {
+  color: #4a4641;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  width: fit-content;
+}
+
+.columns a:hover {
+  color: #050505;
+}
+
+/* ---------- Wordmark + legal ---------- */
 .wordmark {
   display: block;
-  margin: 56px auto 22px;
-  width: min(88%, 880px);
+  margin: 40px auto 26px;
+  width: min(92%, 1000px);
 }
 
 .wordmark img {
@@ -81,11 +119,26 @@
 }
 
 .legal {
+  align-items: center;
+  border-top: 1px solid #ececec;
+  color: #8a857e;
   display: flex;
-  gap: 32px;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  padding-top: 22px;
+}
+
+.legal span {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
 }
 
 @media (max-width: 900px) {
+  .newsletterBand {
+    grid-template-columns: 1fr;
+  }
+
   .columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -94,9 +147,5 @@
 @media (max-width: 560px) {
   .footer {
     padding-inline: 16px;
-  }
-
-  .columns {
-    grid-template-columns: 1fr;
   }
 }

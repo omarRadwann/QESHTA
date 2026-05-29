@@ -5,6 +5,16 @@
   --foreground: #050505;
   --font-qeshta: var(--font-barlow), "Avenir Next Condensed", "Avenir Next",
     "Arial Narrow", Arial, sans-serif;
+  /* Fixed top chrome (announcement bar + header) */
+  --ann-h: 38px;
+  --header-h: 66px;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --ann-h: 32px;
+    --header-h: 56px;
+  }
 }
 
 *,
@@ -26,6 +36,8 @@ body {
   font-family: inherit;
   font-stretch: inherit;
   margin: 0;
+  /* Clear the fixed announcement bar; the fixed header sits below it. */
+  padding-top: var(--ann-h);
   min-height: 100vh;
   text-rendering: geometricprecision;
 }

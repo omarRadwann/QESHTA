@@ -18,17 +18,24 @@ const footerGroups = [
     title: "Company",
     links: [
       { label: "About Us", href: "/#story" },
+      { label: "The Journal", href: "/#journal" },
       { label: "Loyalty Program", href: "/account/" },
       { label: "Contact Us", href: "/privacy-policy/#contact" },
-      { label: "The Journal", href: "/#journal" },
     ],
   },
   {
     title: "Support",
     links: [
       { label: "Returns & Exchanges", href: "/returns-exchanges/" },
-      { label: "FAQ", href: "/privacy-policy/#faq" },
       { label: "Shipping & Delivery", href: "/shipping-delivery/" },
+      { label: "FAQ", href: "/privacy-policy/#faq" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "/privacy-policy/" },
+      { label: "Terms & Conditions", href: "/terms/" },
     ],
   },
 ];
@@ -36,10 +43,22 @@ const footerGroups = [
 export function ShopFooter() {
   return (
     <footer className={styles.footer}>
+      <div className={styles.newsletterBand}>
+        <div className={styles.newsletterIntro}>
+          <p className={styles.eyebrow}>The QESHTA List</p>
+          <h2>Collection notes, early access, and quiet sale alerts.</h2>
+        </div>
+        <NewsletterForm
+          className={styles.newsletter}
+          source="footer"
+          buttonLabel="Subscribe"
+        />
+      </div>
+
       <div className={styles.columns}>
         {footerGroups.map((group) => (
           <nav key={group.title} aria-label={group.title}>
-            <h2>{group.title}</h2>
+            <h3>{group.title}</h3>
             {group.links.map((link) => (
               <Link key={link.label} href={link.href}>
                 {link.label}
@@ -47,14 +66,6 @@ export function ShopFooter() {
             ))}
           </nav>
         ))}
-
-        <NewsletterForm
-          className={styles.newsletter}
-          source="footer"
-          buttonLabel="Go"
-          heading="Newsletter"
-          description="Sign up to receive news about collections, events and sales."
-        />
       </div>
 
       <Link className={styles.wordmark} href="/" aria-label="QESHTA home">
@@ -67,8 +78,8 @@ export function ShopFooter() {
       </Link>
 
       <div className={styles.legal}>
-        <Link href="/privacy-policy/">Privacy Policy</Link>
-        <Link href="/terms/">Terms & Conditions</Link>
+        <span>&copy; 2026 QESHTA. Crafted in Cairo.</span>
+        <span>Prices in EGP</span>
       </div>
     </footer>
   );
