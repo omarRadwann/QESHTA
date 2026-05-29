@@ -9,7 +9,7 @@
 }
 
 .imageFrame {
-  aspect-ratio: 1;
+  aspect-ratio: 3 / 4;
   background: #f5f3f0;
   background: color-mix(in srgb, var(--card-tint, #f5f3f0) 16%, #f5f3f0);
   display: block;
@@ -22,16 +22,17 @@
   height: 100%;
   inset: 0;
   object-fit: cover;
+  object-position: center;
   padding: 0;
   position: absolute;
-  transition: filter 180ms ease, transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: filter 180ms ease, transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
   width: 100%;
 }
 
 .badge {
   background: #050505;
   color: #ffffff;
-  font-size: 0.66rem;
+  font-size: 0.64rem;
   font-weight: 800;
   left: 10px;
   line-height: 1;
@@ -80,62 +81,66 @@
   color: #ffffff;
 }
 
-.sizes {
-  background: linear-gradient(
-    to top,
-    rgb(245 243 240 / 96%),
-    rgb(245 243 240 / 0%)
-  );
-  bottom: 0;
+/* ---------- Caption ---------- */
+.caption {
+  align-items: flex-start;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-  left: 0;
-  opacity: 0;
-  padding: 26px 8px 10px;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  transform: translateY(8px);
-  transition: opacity 200ms ease, transform 200ms ease;
-  z-index: 1;
+  gap: 12px;
+  justify-content: space-between;
+  margin-top: 14px;
 }
 
-.sizes span {
-  background: rgb(255 255 255 / 82%);
-  border: 1px solid rgb(5 5 5 / 24%);
-  color: #050505;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  padding: 4px 7px;
-  text-transform: uppercase;
+.info {
+  min-width: 0;
 }
 
 .card h3,
 .compactCard h3 {
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.15;
-  margin: 18px 0 8px;
+  margin: 0 0 5px;
 }
 
 .card p,
 .compactCard p {
-  font-size: 0.88rem;
+  color: #4a4641;
+  font-size: 0.85rem;
   line-height: 1.1;
   margin: 0;
 }
 
 .compactCard h3 {
-  font-size: 0.78rem;
-  margin-top: 12px;
+  font-size: 0.82rem;
 }
 
 .compactCard p {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
+}
+
+.swatches {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 5px;
+  padding-top: 3px;
+}
+
+.swatches span {
+  border: 1px solid rgb(5 5 5 / 18%);
+  border-radius: 2px;
+  display: block;
+  height: 11px;
+  width: 11px;
+}
+
+.swatchMore {
+  border: 0;
+  color: #8a857e;
+  font-size: 0.64rem;
+  font-weight: 600;
+  height: auto;
+  width: auto;
 }
 
 @media (max-width: 760px) {
@@ -143,7 +148,7 @@
   .compactCard h3,
   .card p,
   .compactCard p {
-    font-size: 0.78rem;
+    font-size: 0.8rem;
   }
 }
 
@@ -151,13 +156,7 @@
   .card:hover .imageFrame img,
   .compactCard:hover .imageFrame img {
     filter: contrast(1.03);
-    transform: scale(1.025);
-  }
-
-  .card:hover .sizes,
-  .compactCard:hover .sizes {
-    opacity: 1;
-    transform: translateY(0);
+    transform: scale(1.03);
   }
 
   .actionButton:hover {

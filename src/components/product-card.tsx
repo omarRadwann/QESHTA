@@ -4,14 +4,9 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { WishlistButton } from "@/components/wishlist-button";
-import {
-  formatPrice,
-  getProductUrl,
-  productSizes,
-  type Product,
-} from "@/data/products";
+import { formatPrice, getProductUrl, type Product } from "@/data/products";
 import { assetPath } from "@/lib/assets";
-import { productTint } from "@/lib/colors";
+import { colorToHex, productTint } from "@/lib/colors";
 import styles from "./product-card.module.css";
 
 type ProductCardProps = {
@@ -45,6 +40,21 @@ function BagIcon() {
   );
 }
 
+function buildSwatches(product: Product): string[] {
+  const variants = product.variants ?? [];
+  if (variants.length < 2) return [];
+  const seen = new Set<string>();
+  const swatches: string[] = [];
+  for (const variant of variants) {
+    const hex = colorToHex(variant.color);
+    if (hex && !seen.has(hex)) {
+      seen.add(hex);
+      swatches.push(hex);
+    }
+  }
+  return swatches;
+}
+
 export function ProductCard({
   product,
   priority = false,
@@ -60,6 +70,7 @@ export function ProductCard({
     "--reveal-index": revealIndex,
     ...(tint ? { "--card-tint": tint } : {}),
   } as CSSProperties;
+  const swatches = buildSwatches(product);
 
   return (
     <article
@@ -73,7 +84,7 @@ export function ProductCard({
             src={assetPath(product.image)}
             alt={product.alt}
             width={900}
-            height={900}
+            height={1200}
             decoding="async"
             fetchPriority={priority ? "high" : "auto"}
             loading={priority ? "eager" : "lazy"}
@@ -81,12 +92,6 @@ export function ProductCard({
           {isSoldOut ? <span className={styles.badge}>Sold out</span> : null}
           {!isSoldOut && isLowStock ? <span className={styles.badge}>Low stock</span> : null}
         </Link>
-
-        <div className={styles.sizes} aria-hidden="true">
-          {productSizes.map((size) => (
-            <span key={size}>{size}</span>
-          ))}
-        </div>
 
         <div className={styles.actions}>
           <Link
@@ -105,8 +110,23 @@ export function ProductCard({
           />
         </div>
       </div>
-      <h3>{product.name}</h3>
-      <p>{formatPrice(displayPrice ?? product.price)}</p>
+
+      <div className={styles.caption}>
+        <div className={styles.info}>
+          <h3>{product.name}</h3>
+          <p>{formatPrice(displayPrice ?? product.price)}</p>
+        </div>
+        {swatches.length > 0 ? (
+          <div className={styles.swatches} aria-hidden="true">
+            {swatches.slice(0, 4).map((hex) => (
+              <span key={hex} style={{ backgroundColor: hex }} />
+            ))}
+            {swatches.length > 4 ? (
+              <span className={styles.swatchMore}>+{swatches.length - 4}</span>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </article>
   );
 }
